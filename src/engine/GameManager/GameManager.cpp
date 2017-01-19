@@ -1,7 +1,5 @@
 #include "GameManager.hpp"
 
-class puedeToglearPantallaCompleta;
-
 /**
  * Inicia el juego
  *  Establece los controles iniciales
@@ -10,16 +8,13 @@ class puedeToglearPantallaCompleta;
  * @return
  */
 GameManager::GameManager(std::string nombreApp,std::string ruta_icono, unsigned int width,unsigned int height,bool pantallaCompleta){
-    SDL_Log("GameManager::~GameManager");
+    SDL_Log("GameManager::GameManager");
 
     srand((unsigned int) time(0));
 
     GameManager::nombreApp   = nombreApp;
     nombreOrganization = "GonGames";
     mRutaIcono = ruta_icono;
-
-    mWidth  = width;
-    mHeight = height;
 
     nativeSize.x = 0;
     nativeSize.y = 0;
@@ -100,8 +95,8 @@ void GameManager::establecerModoDeVideo(bool pantalla_completa){
             (nombreApp.empty()? "Game":nombreApp.c_str()),                  // window title
             SDL_WINDOWPOS_CENTERED,           // initial x position
             SDL_WINDOWPOS_CENTERED,           // initial y position
-            mWidth,                               // mWidth, in pixels
-            mHeight,                               // height, in pixels
+            nativeSize.w,                               // mWidth, in pixels
+            nativeSize.h,                               // height, in pixels
             banderas                  // flags - see below
     );
 
@@ -199,7 +194,7 @@ int GameManager::getActiveJoys(){
  */
 void GameManager::cambiarInterfaz(InterfazGrafica *  nueva){
     if(nueva!=interfaz_actual){
-        interfaces.push(nueva);
+        interfaceStack.push(nueva);
     }
 }
 
@@ -306,7 +301,7 @@ void GameManager::Resize()
  */
 void GameManager::run(){
 
-    if(interfaces.empty()) return;
+    if(interfaceStack.empty()) return;
 
     //The frames per second timer
     //LTimer fpsTimer;
@@ -338,7 +333,7 @@ void GameManager::run(){
         }
         // Si el top de nuestra pila de interfazes es distinto de nuestra interfaz actual
         // significa que se ha hecho un cambio de interfaz o que se ha eliminado la actual
-        if(interfaces.top() != interfaz_actual){
+        if(interfaceStack.top() != interfaz_actual){
             // Si la interfaz actual es distinta de null es porque élla es la que ha llamado el cambio de interfaz
             // o se pudo llamar desde otro lado, tal como cuando se inicia el GameManager en un main.
             if(interfaz_actual != nullptr){
@@ -357,17 +352,11 @@ void GameManager::run(){
             // Si la interfaz actual es null es porque se está comenzando el juego
 
             // Se cambia el puntero a la interfaz actual por la nueva actual
-            interfaz_actual = interfaces.top();
+            interfaz_actual = interfaceStack.top();
 
             // Si la interfaz actual en el top era una en el historial de interfaces
             // esta entonces estaba pausada(ver linea 214~ de este archivo, más arriba)
             if(interfaz_actual->isPaused()){
-                // Se resume la interfaz
-                if(mpResultInterfazActual) {
-                    interfaz_actual->resultInterfazAnterior(idInterfazActual, mpResultInterfazActual);
-                    delete mpResultInterfazActual;
-                    mpResultInterfazActual = nullptr;
-                }
                 interfaz_actual->resume();
             }else{ // Si no estaba pausada significa que es una completamente nueva
                 interfaz_actual->prepare();
@@ -438,7 +427,7 @@ void GameManager::run(){
         SDL_SetRenderTarget(gRenderer, mpTextureBufferTarget); //Set the target back to the back buffer
         //SDL_RenderClear(gRenderer); //Clear the back buffer
 
-        if(interfaces.empty()){
+        if(interfaceStack.empty()){
             quit();
         }
 
@@ -496,13 +485,13 @@ GameManager::~GameManager(){
     SDL_DestroyWindow(mMainWindow);
 
     InterfazGrafica * interfazGraficaDel;
-    while(interfaces.size() > 0){
-        interfazGraficaDel = interfaces.top();
+    while(interfaceStack.size() > 0){
+        interfazGraficaDel = interfaceStack.top();
         if(interfazGraficaDel == interfaz_actual){
             interfaz_actual = nullptr;
         }
         delete interfazGraficaDel;
-        interfaces.pop();
+        interfaceStack.pop();
     }
 
     delete interfaz_actual;
@@ -521,16 +510,9 @@ GameManager::~GameManager(){
 }
 
 
-int GameManager::getWidth() {
-    return mWidth;
-}
-
-int GameManager::getHeight() {
-    return mHeight;
-}
-
 void GameManager::goBack() {
-    interfaces.pop();
+    if(interfaceStack.empty()) return;
+    interfaceStack.pop();
     interfaz_actual->stop();
     if(mpPopUp){
         mpPopUp->stop();
@@ -541,17 +523,17 @@ void GameManager::setRoot(InterfazGrafica *nuevaInterfazRoot) {
 
     InterfazGrafica * interfazUI;
 
-    while(interfaces.size() > 0){
-        interfazUI = interfaces.top();
+    while(interfaceStack.size() > 0){
+        interfazUI = interfaceStack.top();
         interfazUI->stop();
 
         if(interfazUI != interfaz_actual){
             delete interfazUI;
         }
-        interfaces.pop();
+        interfaceStack.pop();
     }
 
-    interfaces.push(nuevaInterfazRoot);
+    interfaceStack.push(nuevaInterfazRoot);
 
     if(mpPopUp){
         mpPopUp->stop();
@@ -559,7 +541,7 @@ void GameManager::setRoot(InterfazGrafica *nuevaInterfazRoot) {
 }
 
 SDL_Rect GameManager::getRectScreen() {
-    return {0,0,mWidth,mHeight};
+    return nativeSize;
 }
 
 void GameManager::closePopUp(InterfazEstandarBackResult * result) {
@@ -633,15 +615,6 @@ int GameManager::getNativeHeight() {
     return nativeSize.h;
 }
 
-void GameManager::cambiarInterfaz(InterfazGrafica *pInterfaz, int ID) {
-    idInterfazActual = ID;
-    cambiarInterfaz(pInterfaz);
-}
-
-void GameManager::goBack(InterfazEstandarBackResult *pResult) {
-    mpResultInterfazActual = pResult;
-    GameManager::goBack();
-}
 
 void GameManager::mostrarToast(Toast *toast) {
     if(mpToastMostrando){

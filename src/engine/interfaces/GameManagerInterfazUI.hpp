@@ -65,7 +65,6 @@ public:
      * @param pJuego
      */
     virtual void cambiarInterfaz(InterfazGrafica * pInterfaz) = 0;
-    virtual void cambiarInterfaz(InterfazGrafica * pInterfaz,int ID) = 0;
 
     /**
      * Regresa en la pila de navegación, si no hay nada en la pila se sale del juego.
@@ -81,7 +80,5 @@ public:
     virtual int getNativeHeight() = 0;
 
     virtual std::string obtenerPrefPath()  = 0;
-
-    virtual void goBack(InterfazEstandarBackResult *pResult) = 0;
 };
 #endif //BOMBERMAN_GAMEMANAGERINTERFAZ_HPP

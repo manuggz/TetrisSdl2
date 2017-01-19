@@ -44,31 +44,31 @@ public:
             mHighScore = 0;
         }
 
-        mMusicaFondo = cargar_musica("resources/music/music.mp3");
-        mSfxChunkGameOver = cargar_sonido((char *) "resources/music/SFX_GameOver.ogg");
-        mSfxChunkGameStart = cargar_sonido((char *) "resources/music/SFX_GameStart.ogg");
-        mSfxLevelUp =  cargar_sonido((char *) "resources/music/SFX_LevelUp.ogg");
-        mSfxClearLines[0] = cargar_sonido((char *) "resources/music/SFX_SpecialLineClearSingle.ogg");
-        mSfxClearLines[1] = cargar_sonido((char *) "resources/music/SFX_SpecialLineClearDouble.ogg");
-        mSfxClearLines[2] = cargar_sonido((char *) "resources/music/SFX_SpecialLineClearTriple.ogg");
-        mSfxClearLines[3] = cargar_sonido((char *) "resources/music/SFX_SpecialTetris.ogg");
+//        mMusicaFondo = cargar_musica((char *)"resources/music/music.mp3");
+//        mSfxChunkGameOver = cargar_sonido((char *) "resources/music/SFX_GameOver.ogg");
+//        mSfxChunkGameStart = cargar_sonido((char *) "resources/music/SFX_GameStart.ogg");
+//        mSfxLevelUp =  cargar_sonido((char *) "resources/music/SFX_LevelUp.ogg");
+//        mSfxClearLines[0] = cargar_sonido((char *) "resources/music/SFX_SpecialLineClearSingle.ogg");
+//        mSfxClearLines[1] = cargar_sonido((char *) "resources/music/SFX_SpecialLineClearDouble.ogg");
+//        mSfxClearLines[2] = cargar_sonido((char *) "resources/music/SFX_SpecialLineClearTriple.ogg");
+//        mSfxClearLines[3] = cargar_sonido((char *) "resources/music/SFX_SpecialTetris.ogg");
 
 
-        mSfxBTBTetris = cargar_sonido((char *) "resources/music/VO_B2BTETRS.ogg");
+//        mSfxBTBTetris = cargar_sonido((char *) "resources/music/VO_B2BTETRS.ogg");
 
-        mSfxCongratulate[0] = cargar_sonido((char *) "resources/music/VO_WOW.ogg");;
-        mSfxCongratulate[1] = cargar_sonido((char *) "resources/music/VO_WONDRFL.ogg");;
-        mSfxCongratulate[2] = cargar_sonido((char *) "resources/music/VO_VRYGOOD.ogg");;
-        mSfxCongratulate[3] = cargar_sonido((char *) "resources/music/VO_THTGREAT.ogg");;
-        mSfxCongratulate[4] = cargar_sonido((char *) "resources/music/VO_FANTSTC.ogg");;
-        mSfxCongratulate[5] = cargar_sonido((char *) "resources/music/VO_EXLNT.ogg");;
-        mSfxCongratulate[6] = cargar_sonido((char *) "resources/music/VO_BRILLIANT.ogg");;
-        mSfxCongratulate[7] = cargar_sonido((char *) "resources/music/VO_AMAZING.ogg");;
+//        mSfxCongratulate[0] = cargar_sonido((char *) "resources/music/VO_WOW.ogg");;
+//        mSfxCongratulate[1] = cargar_sonido((char *) "resources/music/VO_WONDRFL.ogg");;
+//        mSfxCongratulate[2] = cargar_sonido((char *) "resources/music/VO_VRYGOOD.ogg");;
+//        mSfxCongratulate[3] = cargar_sonido((char *) "resources/music/VO_THTGREAT.ogg");;
+//        mSfxCongratulate[4] = cargar_sonido((char *) "resources/music/VO_FANTSTC.ogg");;
+//        mSfxCongratulate[5] = cargar_sonido((char *) "resources/music/VO_EXLNT.ogg");;
+//        mSfxCongratulate[6] = cargar_sonido((char *) "resources/music/VO_BRILLIANT.ogg");;
+//        mSfxCongratulate[7] = cargar_sonido((char *) "resources/music/VO_AMAZING.ogg");;
 
     }
 
-    void playSfx(Mix_Chunk *pSfxChunk) override {
-        mGameManagerInterfaz->play(pSfxChunk);
+    void playSfx(Mix_Chunk *pSfxChunk)  {
+//        mGameManagerInterfaz->play(pSfxChunk);
     }
     void tetrisHardDrop(int tetrisID, int nCells)override {
         if(nCells > 40) nCells = 40;
@@ -97,7 +97,7 @@ public:
             case TETRIS:
                 if(mLineasCompletasAnteriores == TETRIS){
                     mPuntajePlayer += 1200 * mLevelTetrisPlayer;
-                    mGameManagerInterfaz->play(mSfxBTBTetris);
+//                    mGameManagerInterfaz->play(mSfxBTBTetris);
                 }else{
                     mPuntajePlayer += 800*mLevelTetrisPlayer;
                 }
@@ -110,7 +110,7 @@ public:
 
             if(mLineasCompletas >= DOUBLE_LINE && mLineasCompletasAnteriores >= DOUBLE_LINE){
                 if(rand()%3 == 1){
-                    mGameManagerInterfaz->play(mSfxCongratulate[rand()%8]);
+//                    mGameManagerInterfaz->play(mSfxCongratulate[rand()%8]);
                 }
             }
         }
@@ -119,7 +119,7 @@ public:
 
         if(mPuntajePlayer > mHighScore && mHighScore > 0&&!mCongratuledScoreGreaterThanHighScore){
             mCongratuledScoreGreaterThanHighScore = true;
-            mGameManagerInterfaz->play(mSfxCongratulate[rand()%8]);
+//            mGameManagerInterfaz->play(mSfxCongratulate[rand()%8]);
             mBitmapScorePlayer1Valor->setBitmapFont(mBitmapFont[RESALTADO]);
         }
 
@@ -134,12 +134,12 @@ public:
             mTetrisJuego->setTickDelayBajarTetromino(nuevoTick);
             mLevelTetrisPlayer += 1;
             setTextWithDigits(mBitmapLevelPlayer1Valor,mLevelTetrisPlayer,3);
-            mGameManagerInterfaz->play(mSfxLevelUp);
+//            mGameManagerInterfaz->play(mSfxLevelUp);
         }
 
         setTextWithDigits(mBitmapLevelPlayer1Valor,mLineasCompletas,5);
 
-        mGameManagerInterfaz->play(mSfxClearLines[nLineasCompletadas - 1]);
+//        mGameManagerInterfaz->play(mSfxClearLines[nLineasCompletadas - 1]);
     }
 
     void start() override {
@@ -147,8 +147,8 @@ public:
         InterfazGrafica::start();
         mTetrisJuego->start();
         mControlTimer.start();
-        mGameManagerInterfaz->playFadeInSound(mMusicaFondo,MIX_MAX_VOLUME/2);
-        mGameManagerInterfaz->play(mSfxChunkGameStart);
+//        mGameManagerInterfaz->playFadeInSound(mMusicaFondo,MIX_MAX_VOLUME/2);
+//        mGameManagerInterfaz->play(mSfxChunkGameStart);
     }
 
     void tetrisPaused(int tetrisID) override {
@@ -207,18 +207,18 @@ public:
     }
 
     void setTextWithDigits(BitmapFontRenderer * bitmapFontRenderer,int valor,int nDigitos){
-        char textoDigitalizado[N_DIGITOS_ENTEROS + 1];
+/*        char textoDigitalizado[N_DIGITOS_ENTEROS + 1];
 
         sprintf(textoDigitalizado,"%*d",nDigitos,valor);
 
         int i = 0;
         while(textoDigitalizado[i] == ' ')textoDigitalizado[i++]='0';
         bitmapFontRenderer->setText(textoDigitalizado);
-
+*/
     }
 
     void tetrisGameOver(int tetrisID) override {
-        mGameManagerInterfaz->play(mSfxChunkGameOver);
+//        mGameManagerInterfaz->play(mSfxChunkGameOver);
     }
     void tetrisRetry(int tetrisID) override {
         std::cout << "TetrisInterfaz::tetrisRetry(" << tetrisID << ")" << std::endl;
@@ -238,7 +238,7 @@ public:
 
         //mControlTimer.stop();
         mControlTimer.start();
-        mGameManagerInterfaz->play(mSfxChunkGameStart);
+//        mGameManagerInterfaz->play(mSfxChunkGameStart);
     }
 
     void tetrisEnd(int tetrisID) override {
@@ -250,7 +250,7 @@ public:
         if(mPuntajePlayer > mHighScore){
             mHighScore = mPuntajePlayer;
             mMetaData->setMetaData(META_DATA_HIGHSCORE,std::to_string(mHighScore));
-            mMetaData->guardar("resources/settings.db",":");
+            //mMetaData->guardar("resources/settings.db",":");
             return true;
         }
 
@@ -266,7 +266,7 @@ public:
         std::cout << "TetrisInterfaz::resume" << std::endl;
         InterfazGrafica::resume();
         mLayoutBackGround->setDisabled(true);
-        SDL_ShowCursor(SDL_DISABLE);//ocultamos el cursor
+        //SDL_ShowCursor(SDL_DISABLE);//ocultamos el cursor
     }
 
 
@@ -294,7 +294,7 @@ public:
 
     void stop() override {
         InterfazGrafica::stop();
-        mMetaData->guardar("resources/settings.db",":");
+        //mMetaData->guardar("resources/settings.db",":");
     }
 
     void update() override {
@@ -353,20 +353,20 @@ public:
         delete mBitmapLevelPlayer1Valor;
         delete mBitmapLinesPlayer1Valor;
         delete mNombreJugadorPlayer1Valor;
-		delete mMetaData;
+        delete mMetaData;
 
-        Mix_FreeMusic(mMusicaFondo);
-        Mix_FreeChunk(mSfxChunkGameOver);
-        Mix_FreeChunk(mSfxChunkGameStart);
-        Mix_FreeChunk(mSfxLevelUp);
-        Mix_FreeChunk(mSfxBTBTetris);
+//        Mix_FreeMusic(mMusicaFondo);
+//        Mix_FreeChunk(mSfxChunkGameOver);
+//        Mix_FreeChunk(mSfxChunkGameStart);
+//        Mix_FreeChunk(mSfxLevelUp);
+//        Mix_FreeChunk(mSfxBTBTetris);
 
         for(int i = 0 ; i < 8 ; i++) {
-            Mix_FreeChunk(mSfxCongratulate[i]);
+//            Mix_FreeChunk(mSfxCongratulate[i]);
         }
 
         for(int i = 0; i < 4;i++){
-            Mix_FreeChunk(mSfxClearLines[i]);
+//            Mix_FreeChunk(mSfxClearLines[i]);
         }
 
         for(int i = 0;i < 2;i++){
@@ -396,19 +396,21 @@ private:
 
     int mPuntajePlayer = 0;
     int mLineasCompletas = 0;
-    MetaData *mMetaData;
+    MetaData *mMetaData = nullptr;
     int mHighScore;
 
-    Mix_Music * mMusicaFondo = nullptr;
-    Mix_Chunk * mSfxChunkGameStart = nullptr;
-    Mix_Chunk * mSfxChunkGameOver = nullptr;
-    Mix_Chunk * mSfxLevelUp = nullptr;
+//    Mix_Music * mMusicaFondo = nullptr;
 
-    Mix_Chunk * mSfxBTBTetris = nullptr;
+//    Mix_Chunk * mSfxChunkGameStart = nullptr;
+//    Mix_Chunk * mSfxChunkGameOver = nullptr;
+//    Mix_Chunk * mSfxLevelUp = nullptr;
 
-    Mix_Chunk * mSfxCongratulate[8] {nullptr};
+//    Mix_Chunk * mSfxBTBTetris = nullptr;
 
-    Mix_Chunk * mSfxClearLines[4] {nullptr};
+//    Mix_Chunk * mSfxCongratulate[8] {nullptr};
+
+//    Mix_Chunk * mSfxClearLines[4] {nullptr};
+
     int mLevelTetrisPlayer = 1;
     int mLineasCompletasAnteriores = 0;
     bool mCongratuledScoreGreaterThanHighScore = false;

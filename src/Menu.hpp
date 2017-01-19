@@ -79,10 +79,6 @@ public:
         InterfazGrafica::procesarEvento(event);
         if(event->type==SDL_KEYDOWN) {
             switch (event->key.keysym.sym) {
-                case SDLK_ESCAPE:
-                    mGameManagerInterfaz->goBack();
-                    //mGameManager->showPopUp()
-                    break;
                 case SDLK_DOWN:
                 {
                     int avance = 1;

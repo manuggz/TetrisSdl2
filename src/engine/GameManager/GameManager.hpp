@@ -64,9 +64,6 @@ public:
     void run();
     void quit(){salir_juego=true;};
 
-    int getWidth();
-    int getHeight();
-
     ~GameManager();
     void goBack() ;
 
@@ -84,10 +81,6 @@ public:
     void playFadeInSound(Mix_Music *music, Uint8 volumen) ;
 
     Uint32 getWindowPixelFormat() override;
-
-    void cambiarInterfaz(InterfazGrafica *pInterfaz, int ID) override;
-
-    void goBack(InterfazEstandarBackResult *pResult) override;
 
     int getNativeWidth() override;
 
@@ -118,9 +111,10 @@ private:
     int mFPS = 60;
     int mScreenTicksPerFrame = 1000 / mFPS;
 
-    std::stack<InterfazGrafica *> interfaces; // Pila de interfaces
+    std::stack<InterfazGrafica *> interfaceStack; // Pila de interfaces
     InterfazGrafica * interfaz_actual = nullptr;
-    SDL_Window *mMainWindow = nullptr;
+
+    SDL_Window   *mMainWindow = nullptr;
     SDL_Renderer *gRenderer = nullptr;
 
     SDL_Joystick ** pJoystick;
@@ -128,25 +122,26 @@ private:
     bool mIniciadoModuloSonido=false;
     bool salir_juego = false;
 
-    int mWidth = 0;
-    int mHeight = 0;
+    //int mWidth = 0;
+    //int mHeight = 0;
 
     PopUpInterfaz * mpPopUp = nullptr;
     InterfazEstandarBackResult *mpResultPopUp = nullptr;
     // IDentificador del Actual PopUp
     // USado para identificar en el codigo cual es el popup que se cerró
     int mIDCodePopUp;
+
     std::string mRutaIcono;
 
     int mChannels = 5;
     int mJoysticksActivos = 5;
-
 
     bool mIsPantallaCompleta = false;
 
 
     SDL_Rect nativeSize;
     SDL_Rect newWindowSize;
+
     float scaleRatioW;
     float scaleRatioH;
 
@@ -167,10 +162,7 @@ private:
     std::string nombreOrganization;
     std::string nombreApp;
 
-    int idInterfazActual;
-
     bool puedeToglearPantallaCompleta = true;
-    InterfazEstandarBackResult *mpResultInterfazActual = nullptr;
 
     Toast * mpToastMostrando = nullptr;
 };
