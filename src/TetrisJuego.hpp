@@ -74,6 +74,8 @@ public:
 
         mControlPlayerTeclas = new ControlTeclasPlayer();
         mControlPlayerTeclas->setTeclaRepeatDelay(ControlTeclasPlayer::TECLA_HARD_DROP,ControlTeclasPlayer::NO_REPEAT);
+        mControlPlayerTeclas->setTeclaRepeatDelay(ControlTeclasPlayer::TECLA_GIRAR_LEFT,ControlTeclasPlayer::DELAY_REPEAT_MEDIUM);
+        mControlPlayerTeclas->setTeclaRepeatDelay(ControlTeclasPlayer::TECLA_GIRAR_RIGHT,ControlTeclasPlayer::DELAY_REPEAT_MEDIUM);
     }
 
     void crearUI(SDL_Renderer * gRenderer){

@@ -17,8 +17,8 @@ public:
 
     static const int DELAY_REPEAT_NONE   = 0;
     static const int DELAY_REPEAT_SHORT  = 150;
-    static const int DELAY_REPEAT_MEDIUM = 300;
-    static const int DELAY_REPEAT_LONG   = 500;
+    static const int DELAY_REPEAT_MEDIUM = 350;
+    static const int DELAY_REPEAT_LONG   = 600;
     static const int NO_REPEAT   = -1;
 
     typedef enum {
