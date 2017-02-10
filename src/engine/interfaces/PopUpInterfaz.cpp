@@ -3,33 +3,18 @@
 //
 #include "PopUpInterfaz.hpp"
 
-PopUpInterfaz::PopUpInterfaz(GameManagerPopUpInterfaz * gameManager){
+PopUpInterfaz::PopUpInterfaz(GameManagerPopUpInterfaz * gameManager,int ID){
     mGameManager = gameManager;
     mIsPaused = false;
     mIsStarted = false;
+    PopUpInterfaz::ID = ID;
 }
-
-void PopUpInterfaz::start(){
-    mIsStarted=true;
-}
-bool PopUpInterfaz::isPaused(){
-    return mIsPaused&&mIsStarted&&!mIsStopped;
-}
-bool PopUpInterfaz::isStarted(){
-    return mIsStarted;
-}
-bool PopUpInterfaz::isStopped(){
-    return mIsStopped;
-}
-void PopUpInterfaz::stop(){
-    mIsStopped = true;
-} // La detiene marcandola  para eliminacion
 void PopUpInterfaz::procesarEvento(SDL_Event *event) {
     switch(event->type) {
         case SDL_KEYDOWN:
             switch (event->key.keysym.sym) {
                 case SDLK_ESCAPE:
-                    mGameManager->closePopUp(nullptr);
+                    if(!isStopped())mGameManager->closePopUp(nullptr);
                     break;
             }
     }

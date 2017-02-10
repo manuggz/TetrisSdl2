@@ -254,11 +254,11 @@ bool GameManager::procesarEventos(){
             default:break;
         }
 
-        if(interfaz_actual && (!mpPopUp || !mpPopUp->isStarted()))
+        if(interfaz_actual && (!popup_actual || !popup_actual->isStarted()))
             interfaz_actual->procesarEvento(&evento);
 
-        if(mpPopUp && mpPopUp->isStarted() && !mpPopUp->isStopped())
-            mpPopUp->procesarEvento(&evento);
+        if(popup_actual && popup_actual->isStarted() && !popup_actual->isStopped())
+            popup_actual->procesarEvento(&evento);
     }
     return true;//se puede continuar
 }
@@ -317,20 +317,6 @@ void GameManager::run(){
         //Start cap timer
         capTimer.start();
 
-        if(mpPopUp&& mpPopUp->isStopped()){
-
-            delete mpPopUp;
-            mpPopUp = nullptr;
-
-            if(interfaz_actual != nullptr){
-                interfaz_actual->resultPopUp(mpResultPopUp, mIDCodePopUp);
-                mpResultPopUp = nullptr;
-                if(!interfaz_actual->isStopped())
-                    interfaz_actual->resume();
-            }
-
-
-        }
         // Si el top de nuestra pila de interfazes es distinto de nuestra interfaz actual
         // significa que se ha hecho un cambio de interfaz o que se ha eliminado la actual
         if(interfaceStack.top() != interfaz_actual){
@@ -367,21 +353,50 @@ void GameManager::run(){
         }
 
         // Si tenemos un pop up y no se ha iniciado
-        if(mpPopUp != nullptr && !mpPopUp->isStarted()){
+        if( (popUpVector.empty() && popup_actual != nullptr) ||
+            (!popUpVector.empty()&&popUpVector.back() != popup_actual)){
             // Pausamos la interfaz actual
-            interfaz_actual->pause();
-            mpPopUp->prepare();
-            mpPopUp->createUI(gRenderer);
-            mpPopUp->start();
+            static int id_popupactual;
+
+            if(popup_actual != nullptr){
+
+                id_popupactual = popup_actual->getID();
+
+                if(popup_actual->isStopped()){
+                    delete popup_actual; // Se elimina de memoria ya que no tendrá uso
+                    popup_actual = nullptr;
+
+                }else{
+                    popup_actual->pause(); // Linea 214
+                }
+            }
+
+            if(popUpVector.empty()){
+                interfaz_actual->resultPopUp(p_resultado_popup, id_popupactual);
+                interfaz_actual->resume();
+            }else{
+                popup_actual = popUpVector.back();
+
+                if(popup_actual->isPaused()){
+                    popup_actual->resultPopUp(p_resultado_popup, id_popupactual);
+                    popup_actual->resume();
+                }else{ // Si no estaba pausada significa que es una completamente nueva
+                    popup_actual->prepare();
+                    popup_actual->createUI(gRenderer);
+                    popup_actual->start();
+                    popup_actual->resume();
+                }
+
+            }
         }
 
         if(procesarEventos()){ // Si se deben procesar los eventos en este frame
 
             if(!interfaz_actual->isStopped()) {
 
-                if(mpPopUp && mpPopUp->isStarted()){
-                    if(!mpPopUp->isStopped()) {
-                        mpPopUp->update();
+                if(popup_actual && popup_actual->isStarted()){
+                    if(!popup_actual->isStopped()) {
+                        popup_actual->update();
                         // A pesar que se esta mostrando un pop up, como esto es un juego
                         // no implica que el juego se debe detener, pueden haber animaciones en el juego ejecutandose
                         interfaz_actual->updateWhenPopUp();
@@ -400,9 +415,13 @@ void GameManager::run(){
                 }
 
                 interfaz_actual->draw(gRenderer);
-                if(mpPopUp && mpPopUp->isStarted()){
-                    mpPopUp->draw(gRenderer);
+
+                for(auto & popup:popUpVector){
+                    if(popup->isStarted()){
+                        popup->draw(gRenderer);
+                    }
                 }
+
                 if(mpToastMostrando && !mpToastMostrando->isStopped()){
                     mpToastMostrando->draw(gRenderer);
                 }
@@ -495,7 +514,7 @@ GameManager::~GameManager(){
     }
 
     delete interfaz_actual;
-
+    clearPopUpStack();
     //delete mpGaleria;
 
     for(int i=0;i<mJoysticksActivos;i++){
@@ -514,13 +533,27 @@ void GameManager::goBack() {
     if(interfaceStack.empty()) return;
     interfaceStack.pop();
     interfaz_actual->stop();
-    if(mpPopUp){
-        mpPopUp->stop();
-    }
+    clearPopUpStack();
 }
 
-void GameManager::setRoot(InterfazGrafica *nuevaInterfazRoot) {
+void GameManager::clearPopUpStack(){
+    PopUpInterfaz * popUpInterfaz;
+    while(popUpVector.size() > 0){
+        popUpInterfaz = popUpVector.back();
+        if(popUpInterfaz == popup_actual){
+            popup_actual = nullptr;
+        }
+        delete popUpInterfaz;
+        interfaceStack.pop();
+    }
 
+    delete popup_actual;
+    popup_actual = nullptr;
+    p_resultado_popup = nullptr;
+
+}
+void GameManager::setRoot(InterfazGrafica *nuevaInterfazRoot) {
+/*
     InterfazGrafica * interfazUI;
 
     while(interfaceStack.size() > 0){
@@ -537,7 +570,7 @@ void GameManager::setRoot(InterfazGrafica *nuevaInterfazRoot) {
 
     if(mpPopUp){
         mpPopUp->stop();
-    }
+    }*/
 }
 
 SDL_Rect GameManager::getRectScreen() {
@@ -545,26 +578,14 @@ SDL_Rect GameManager::getRectScreen() {
 }
 
 void GameManager::closePopUp(InterfazEstandarBackResult * result) {
-
-    if(mpPopUp){
-        if(!mpPopUp->isStopped())
-            mpPopUp->stop();
-    }
-    mpResultPopUp = result;
+    if(popUpVector.empty()) return;
+    popUpVector.pop_back();
+    popup_actual->stop();
+    p_resultado_popup = result;
 }
 
-void GameManager::showPopUp(PopUpInterfaz *pPopUp,int CodePopUp) {
-
-    if(mpPopUp){
-        if(!mpPopUp->isStopped())
-            mpPopUp->stop();
-
-        interfaz_actual->resultPopUp(nullptr,mIDCodePopUp);
-        delete mpPopUp;
-    }
-
-    mpPopUp      = pPopUp;
-    mIDCodePopUp = CodePopUp;
+void GameManager::showPopUp(PopUpInterfaz *pPopUp) {
+    popUpVector.push_back(pPopUp);
 }
 
 float GameManager::getScaleRatioW() const {

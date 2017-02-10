@@ -15,7 +15,7 @@ class RandomGenerator{
 public:
 
     int getNextFormaTetromino(){
-        if(mFormaRegresadaIndice >= Tetromino::N_FORMAS){
+        if(mFormaRegresadaIndice >= N_FORMAS){
             randomBolsa();
             mFormaRegresadaIndice = -1;
         }
@@ -31,9 +31,11 @@ private:
             Tetromino::O,
             Tetromino::S,
             Tetromino::T,
+
+
             Tetromino::Z,
     };
-    int mFormaRegresadaIndice = Tetromino::N_FORMAS;
+    int mFormaRegresadaIndice = N_FORMAS;
     void randomBolsa(){
 
         std::random_device rd;

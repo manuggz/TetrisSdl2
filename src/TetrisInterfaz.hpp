@@ -11,19 +11,33 @@
 #include "engine/util/CMetaData.hpp"
 #include "engine/util/BitmapFont.hpp"
 #include "engine/util/LTimer.hpp"
+#include "ConfiguracionSingleton.hpp"
+#include "engine/util/MusicaFondo.hpp"
+#include "engine/util/EfectoSonido.hpp"
+#include "MenuContextual.hpp"
+#include "MenuContextualAnimado.hpp"
+#include "PopUpOpciones.hpp"
 
 static const int TETRIS_PLAYER_1 = 1;
 
 static const int N_DIGITOS_ENTEROS = 10;
-static const char *const META_DATA_HIGHSCORE = "HighScore";
 static const int SINGLE_LINE = 1;
 static const int DOUBLE_LINE = 2;
 static const int TRIPLE_LINE = 3;
 static const int TETRIS = 4;
 
 
-class TetrisInterfaz : public InterfazGrafica, public InterfazJuegoTetris {
+static const int ID_OPCION_MENU_CONTINUE = 1;
+
+static const int ID_OPCION_MENU_RETRY = 2;
+
+static const int ID_OPCION_MENU_OPTIONS = 3;
+
+static const int ID_OPCION_MENU_END = 4;
+
+class TetrisInterfaz : public InterfazGrafica, public InterfazJuegoTetris, public ContextMenuParent {
 public:
+
 
     TetrisInterfaz(GameManagerInterfazUI *gameManagerInterfaz)
             : InterfazGrafica(gameManagerInterfaz) {
@@ -37,39 +51,33 @@ public:
         mLayoutBackGround          = new LayoutAbsolute();
         mTetrisJuego = new TetrisJuego(this, TETRIS_PLAYER_1, 288 + 32, 0);
 
-        mMetaData = new MetaData();
-        if(mMetaData->cargarMetaData("resources/settings.db",":")){
-            mHighScore = std::stoi(mMetaData->getMetaData(META_DATA_HIGHSCORE));
-        }else{
-            mHighScore = 0;
-        }
+        configuracionSingleton = ConfiguracionSingletonManager::obtenerConfiguracion();
+        mHighScore = configuracionSingleton->obtenerEntero(ID_HIGHSCORE,0);
 
-//        mMusicaFondo = cargar_musica((char *)"resources/music/music.mp3");
-//        mSfxChunkGameOver = cargar_sonido((char *) "resources/music/SFX_GameOver.ogg");
-//        mSfxChunkGameStart = cargar_sonido((char *) "resources/music/SFX_GameStart.ogg");
-//        mSfxLevelUp =  cargar_sonido((char *) "resources/music/SFX_LevelUp.ogg");
-//        mSfxClearLines[0] = cargar_sonido((char *) "resources/music/SFX_SpecialLineClearSingle.ogg");
-//        mSfxClearLines[1] = cargar_sonido((char *) "resources/music/SFX_SpecialLineClearDouble.ogg");
-//        mSfxClearLines[2] = cargar_sonido((char *) "resources/music/SFX_SpecialLineClearTriple.ogg");
-//        mSfxClearLines[3] = cargar_sonido((char *) "resources/music/SFX_SpecialTetris.ogg");
+        mMusicaFondo = new MusicaFondo("resources/music/music.mp3");
+
+        mSfxChunkGameOver = new EfectoSonido("resources/music/SFX_GameOver.ogg",MIX_MAX_VOLUME);
+        mSfxChunkGameStart = new EfectoSonido("resources/music/SFX_GameStart.ogg",MIX_MAX_VOLUME);
+        mSfxLevelUp =  new EfectoSonido("resources/music/SFX_LevelUp.ogg",MIX_MAX_VOLUME);
+        mSfxClearLines[0] = new EfectoSonido("resources/music/SFX_SpecialLineClearSingle.ogg",MIX_MAX_VOLUME);
+        mSfxClearLines[1] = new EfectoSonido("resources/music/SFX_SpecialLineClearDouble.ogg",MIX_MAX_VOLUME);
+        mSfxClearLines[2] = new EfectoSonido("resources/music/SFX_SpecialLineClearTriple.ogg",MIX_MAX_VOLUME);
+        mSfxClearLines[3] = new EfectoSonido("resources/music/SFX_SpecialTetris.ogg",MIX_MAX_VOLUME);
 
 
-//        mSfxBTBTetris = cargar_sonido((char *) "resources/music/VO_B2BTETRS.ogg");
+        mSfxBTBTetris = new EfectoSonido("resources/music/VO_B2BTETRS.ogg",MIX_MAX_VOLUME);
 
-//        mSfxCongratulate[0] = cargar_sonido((char *) "resources/music/VO_WOW.ogg");;
-//        mSfxCongratulate[1] = cargar_sonido((char *) "resources/music/VO_WONDRFL.ogg");;
-//        mSfxCongratulate[2] = cargar_sonido((char *) "resources/music/VO_VRYGOOD.ogg");;
-//        mSfxCongratulate[3] = cargar_sonido((char *) "resources/music/VO_THTGREAT.ogg");;
-//        mSfxCongratulate[4] = cargar_sonido((char *) "resources/music/VO_FANTSTC.ogg");;
-//        mSfxCongratulate[5] = cargar_sonido((char *) "resources/music/VO_EXLNT.ogg");;
-//        mSfxCongratulate[6] = cargar_sonido((char *) "resources/music/VO_BRILLIANT.ogg");;
-//        mSfxCongratulate[7] = cargar_sonido((char *) "resources/music/VO_AMAZING.ogg");;
+        mSfxCongratulate[0] = new EfectoSonido("resources/music/VO_WOW.ogg",MIX_MAX_VOLUME);;
+        mSfxCongratulate[1] = new EfectoSonido("resources/music/VO_WONDRFL.ogg",MIX_MAX_VOLUME);;
+        mSfxCongratulate[2] = new EfectoSonido("resources/music/VO_VRYGOOD.ogg",MIX_MAX_VOLUME);;
+        mSfxCongratulate[3] = new EfectoSonido("resources/music/VO_THTGREAT.ogg",MIX_MAX_VOLUME);;
+        mSfxCongratulate[4] = new EfectoSonido("resources/music/VO_FANTSTC.ogg",MIX_MAX_VOLUME);;
+        mSfxCongratulate[5] = new EfectoSonido("resources/music/VO_EXLNT.ogg",MIX_MAX_VOLUME);;
+        mSfxCongratulate[6] = new EfectoSonido("resources/music/VO_BRILLIANT.ogg",MIX_MAX_VOLUME);;
+        mSfxCongratulate[7] = new EfectoSonido("resources/music/VO_AMAZING.ogg",MIX_MAX_VOLUME);;
 
     }
 
-    void playSfx(Mix_Chunk *pSfxChunk)  {
-//        mGameManagerInterfaz->play(pSfxChunk);
-    }
     void tetrisHardDrop(int tetrisID, int nCells)override {
         if(nCells > 40) nCells = 40;
         mPuntajePlayer +=  2*nCells;
@@ -97,7 +105,7 @@ public:
             case TETRIS:
                 if(mLineasCompletasAnteriores == TETRIS){
                     mPuntajePlayer += 1200 * mLevelTetrisPlayer;
-//                    mGameManagerInterfaz->play(mSfxBTBTetris);
+                    if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxBTBTetris->play();
                 }else{
                     mPuntajePlayer += 800*mLevelTetrisPlayer;
                 }
@@ -110,7 +118,7 @@ public:
 
             if(mLineasCompletas >= DOUBLE_LINE && mLineasCompletasAnteriores >= DOUBLE_LINE){
                 if(rand()%3 == 1){
-//                    mGameManagerInterfaz->play(mSfxCongratulate[rand()%8]);
+                    if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxCongratulate[rand()%8]->play();
                 }
             }
         }
@@ -119,7 +127,7 @@ public:
 
         if(mPuntajePlayer > mHighScore && mHighScore > 0&&!mCongratuledScoreGreaterThanHighScore){
             mCongratuledScoreGreaterThanHighScore = true;
-//            mGameManagerInterfaz->play(mSfxCongratulate[rand()%8]);
+            if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxCongratulate[rand()%8]->play();
             mBitmapScorePlayer1Valor->setBitmapFont(mBitmapFont[RESALTADO]);
         }
 
@@ -134,12 +142,12 @@ public:
             mTetrisJuego->setTickDelayBajarTetromino(nuevoTick);
             mLevelTetrisPlayer += 1;
             setTextWithDigits(mBitmapLevelPlayer1Valor,mLevelTetrisPlayer,3);
-//            mGameManagerInterfaz->play(mSfxLevelUp);
+            if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxLevelUp->play();
         }
 
         setTextWithDigits(mBitmapLevelPlayer1Valor,mLineasCompletas,5);
 
-//        mGameManagerInterfaz->play(mSfxClearLines[nLineasCompletadas - 1]);
+        if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxClearLines[nLineasCompletadas - 1]->play();
     }
 
     void start() override {
@@ -147,16 +155,14 @@ public:
         InterfazGrafica::start();
         mTetrisJuego->start();
         mControlTimer.start();
-//        mGameManagerInterfaz->playFadeInSound(mMusicaFondo,MIX_MAX_VOLUME/2);
-//        mGameManagerInterfaz->play(mSfxChunkGameStart);
+        if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxChunkGameStart->play();
     }
 
-    void tetrisPaused(int tetrisID) override {
+    void tetrisPresionadoPause(int tetrisID) override {
         mControlTimer.pause();
-    }
-
-    void tetrisResumed(int tetrisID) override {
-        mControlTimer.resume();
+        menuPausa->setVisible(true);
+        mTetrisJuego->pause();
+        menuPausa->establecerResaltado(ID_OPCION_MENU_CONTINUE);
     }
 
     virtual void createUI(SDL_Renderer *renderer)  override{
@@ -169,15 +175,15 @@ public:
         mLayoutBackGround->setLayoutParam(LAYOUT_PARAM_WRAP_HEIGHT,LAYOUT_PARAM_FALSE);
 
 
-        mNombreJugador = "Iranid<3";
+        mNombreJugador = configuracionSingleton->obtenerString(ID_NICK_NAME,DEFAULT_TEXT_NICK);
 
         //mLayoutBackGround->setBackgroundColor(SDL_Color {27,63,177,255});
         LTexture * lTexture = new LTexture();
         lTexture->cargarDesdeArchivo("resources/backgroundSinglePlayer.png",renderer,false);
         mLayoutBackGround->setBackgroundTexture(lTexture);
 
-        mBitmapFont[NORMAL] = new BitmapFont(renderer,"resources/fuentes/fuente_1.png");
-        mBitmapFont[RESALTADO] = new BitmapFont(renderer,"resources/fuentes/fuente_2.png");
+        mBitmapFont[NORMAL] = new BitmapFont(renderer,"resources/fuentes/tetris_fuente_1_32_blanca_rasterizado.png");
+        mBitmapFont[RESALTADO] = new BitmapFont(renderer,"resources/fuentes/tetris_fuente_1_32_roja.png");
 
         mBitmapHighScorePlayer1Valor = new BitmapFontRenderer(mBitmapFont[NORMAL],30,217);
         setTextWithDigits(mBitmapHighScorePlayer1Valor,mHighScore,N_DIGITOS_ENTEROS);
@@ -201,56 +207,76 @@ public:
         mBitmapLinesPlayer1Valor->setRight(270);
         mBitmapLinesPlayer1Valor->setText("00000");
 
+        // Recursos para el menu
+        menuPausa = new MenuContextual(this,310,270);
+
+        menuPausa->agregarOpcionMenu("Continue", ID_OPCION_MENU_CONTINUE);
+        menuPausa->agregarOpcionMenu("Retry", ID_OPCION_MENU_RETRY);
+        menuPausa->agregarOpcionMenu("Options", ID_OPCION_MENU_OPTIONS);
+        menuPausa->agregarOpcionMenu("End", ID_OPCION_MENU_END);
+
+        menuPausa->establecerFuente(new BitmapFont(renderer,"resources/fuentes/tetris_fuente_1_32_roja.png"),
+                               MenuContextual::FUENTE_NORMAL);
+        menuPausa->establecerFuente(new BitmapFont(renderer,"resources/fuentes/tetris_fuente_1_32_amarilla.png"),
+                               MenuContextual::FUENTE_RESALTADA);
+
+
+        LTexture *textureFlechaDerecha = new LTexture();
+        textureFlechaDerecha->cargarDesdeArchivo("resources/images/tetris_flecha_opcion_seleccionada_dir_derecha.png",
+                                                 renderer, false);
+        menuPausa->establecerTexturaFlechaDerecha(textureFlechaDerecha);
+
+        LTexture *textureFlechaIzquierda = new LTexture();
+        textureFlechaIzquierda->cargarDesdeArchivo("resources/images/tetris_flecha_opcion_seleccionada_dir_izquierda.png",
+                                                   renderer, false);
+        menuPausa->establecerTexturaFlechaIzquierda(textureFlechaIzquierda);
+
+        menuPausa->createUI(renderer);
+        LTexture * textureFondoMenu = new LTexture();
+        textureFondoMenu->cargarDesdeArchivo("resources/images/menuopciones_placeholder.png",renderer,false);
+        menuPausa->establecerTexturaFondo(textureFondoMenu);
+        menuPausa->establecerResaltado(ID_OPCION_MENU_CONTINUE);
+        menuPausa->setVisible(false);
+
         mTetrisJuego->crearUI(renderer);
         SDL_ShowCursor(SDL_DISABLE);//ocultamos el cursor
 
     }
 
     void setTextWithDigits(BitmapFontRenderer * bitmapFontRenderer,int valor,int nDigitos){
-/*        char textoDigitalizado[N_DIGITOS_ENTEROS + 1];
+        char textoDigitalizado[N_DIGITOS_ENTEROS + 1];
 
         sprintf(textoDigitalizado,"%*d",nDigitos,valor);
 
         int i = 0;
         while(textoDigitalizado[i] == ' ')textoDigitalizado[i++]='0';
         bitmapFontRenderer->setText(textoDigitalizado);
-*/
+
     }
 
     void tetrisGameOver(int tetrisID) override {
-//        mGameManagerInterfaz->play(mSfxChunkGameOver);
-    }
-    void tetrisRetry(int tetrisID) override {
-        std::cout << "TetrisInterfaz::tetrisRetry(" << tetrisID << ")" << std::endl;
-        mTetrisJuego->reset();
-        if(actualizarHighScore()){
-            setTextWithDigits(mBitmapHighScorePlayer1Valor,mHighScore,N_DIGITOS_ENTEROS);
-        }
-        mPuntajePlayer = 0;
-        mLineasCompletas = 0;
-        mLineasCompletasAnteriores = 0;
-        mLevelTetrisPlayer = 1;
-        mCongratuledScoreGreaterThanHighScore = false;
-        mBitmapScorePlayer1Valor->setBitmapFont(mBitmapFont[NORMAL]);
-        mBitmapLinesPlayer1Valor->setText("00000");
-        mBitmapLevelPlayer1Valor->setText("001");
-        mBitmapScorePlayer1Valor->setText("0000000000");
-
-        //mControlTimer.stop();
-        mControlTimer.start();
-//        mGameManagerInterfaz->play(mSfxChunkGameStart);
+        if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxChunkGameOver->play();
+        menuPausa->establecerVisilidad(ID_OPCION_MENU_CONTINUE,false);
+        menuPausa->establecerResaltado(ID_OPCION_MENU_RETRY);
     }
 
-    void tetrisEnd(int tetrisID) override {
-        actualizarHighScore();
-        mGameManagerInterfaz->goBack();
+    std::string obtenerPrefPath() override {
+        return mGameManagerInterfaz->obtenerPrefPath();
     }
+
+    int getJoysActivos() override {
+        return mGameManagerInterfaz->getActiveJoys();
+    }
+
+    SDL_Joystick *getJoy(int device_index) override {
+        return mGameManagerInterfaz->getJoy(device_index);
+    }
+
 
     bool actualizarHighScore(){
         if(mPuntajePlayer > mHighScore){
             mHighScore = mPuntajePlayer;
-            mMetaData->setMetaData(META_DATA_HIGHSCORE,std::to_string(mHighScore));
-            //mMetaData->guardar("resources/settings.db",":");
+            configuracionSingleton->guardarEntero(ID_HIGHSCORE,mHighScore);
             return true;
         }
 
@@ -262,10 +288,17 @@ public:
         mTetrominoSiguiente->move(803,118);
     }
 
-    virtual void resume() override {
+    void resume() override {
         std::cout << "TetrisInterfaz::resume" << std::endl;
         InterfazGrafica::resume();
         mLayoutBackGround->setDisabled(true);
+        if(configuracionSingleton->obtenerBooleano(ID_IS_MUSIC_ON,true)){
+            mMusicaFondo->play();
+        }
+
+        mNombreJugador = configuracionSingleton->obtenerString(ID_NICK_NAME,DEFAULT_TEXT_NICK);
+        mNombreJugadorPlayer1Valor->setText(mNombreJugador);
+
         //SDL_ShowCursor(SDL_DISABLE);//ocultamos el cursor
     }
 
@@ -280,9 +313,24 @@ public:
         if(evento->type==SDL_KEYDOWN) {
             switch (evento->key.keysym.sym) {
                 case SDLK_ESCAPE:
-                    actualizarHighScore();
-                    mGameManagerInterfaz->goBack();
-                    //mGameManager->showPopUp()
+                    if(menuPausa->esVisible()) {
+                        if(menuPausa->esOpcionMenuVisible(ID_OPCION_MENU_CONTINUE)) {
+                            if (menuPausa->obtenerIDResaltadoActual() != ID_OPCION_MENU_CONTINUE) {
+                                menuPausa->establecerResaltado(ID_OPCION_MENU_CONTINUE);
+                            }else{
+                                opcionSeleccionadaMenuContextual(ID_OPCION_MENU_CONTINUE);
+                            }
+                        }else{
+                            actualizarHighScore();
+                            mGameManagerInterfaz->goBack();
+                        }
+                        return;
+                    }else{
+                        mControlTimer.pause();
+                        menuPausa->setVisible(true);
+                        mTetrisJuego->pause();
+                        return;
+                    }
                     break;
                 default:
                     break;
@@ -290,16 +338,66 @@ public:
         }
 
         mTetrisJuego->procesarEvento(evento);
+        if(menuPausa->esVisible()){
+            menuPausa->procesarEvento(evento);
+        }
     }
 
     void stop() override {
         InterfazGrafica::stop();
-        //mMetaData->guardar("resources/settings.db",":");
     }
 
     void update() override {
         InterfazGrafica::update();
         mTetrisJuego->update();
+        if(menuPausa->esVisible()){
+            menuPausa->update();
+        }
+    }
+
+    void opcionSeleccionadaMenuContextual(int idOpcionSeleccionada) override {
+        switch (idOpcionSeleccionada){
+            case ID_OPCION_MENU_CONTINUE:
+//                            std::cout << "TetrisJuego::CONTINUE" << std::endl;
+                //mEstadoJuego = EstadoJuego ::RUNNING;
+                mTetrisJuego->resume();
+//                            if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxHoldPiece->play();
+                menuPausa->setVisible(false);
+                mControlTimer.resume();
+
+                break;
+            case ID_OPCION_MENU_RETRY:
+                menuPausa->establecerVisilidad(ID_OPCION_MENU_CONTINUE,true);
+                mTetrisJuego->reset();
+                if(actualizarHighScore()){
+                    setTextWithDigits(mBitmapHighScorePlayer1Valor,mHighScore,N_DIGITOS_ENTEROS);
+                }
+                mPuntajePlayer = 0;
+                mLineasCompletas = 0;
+                mLineasCompletasAnteriores = 0;
+                mLevelTetrisPlayer = 1;
+                mCongratuledScoreGreaterThanHighScore = false;
+                mBitmapScorePlayer1Valor->setBitmapFont(mBitmapFont[NORMAL]);
+                mBitmapLinesPlayer1Valor->setText("00000");
+                mBitmapLevelPlayer1Valor->setText("001");
+                mBitmapScorePlayer1Valor->setText("0000000000");
+
+                //mControlTimer.stop();
+                mControlTimer.start();
+                if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxChunkGameStart->play();
+                menuPausa->setVisible(false);
+                break;
+            case ID_OPCION_MENU_END:
+                actualizarHighScore();
+                mGameManagerInterfaz->goBack();
+                break;
+            case ID_OPCION_MENU_OPTIONS:{
+                    PopUpOpciones * popUpOpciones = new PopUpOpciones(mGameManagerInterfaz,ID_POP_UP_OPCIONES);
+                    mGameManagerInterfaz->showPopUp(popUpOpciones);
+            }
+            break;
+
+        }
     }
 
     void draw(SDL_Renderer *renderer) override {
@@ -339,11 +437,15 @@ public:
 
         mTetrisJuego->draw(renderer);
 
+        if(menuPausa->esVisible()){
+            menuPausa->draw(renderer);
+        }
         if(mTetrominoSiguiente != nullptr) mTetrominoSiguiente->draw(renderer);
     }
 
     ~TetrisInterfaz(){
         std::cout << "~TetrisInterfaz()" << std::endl;
+
         delete mLayoutBackGround; // Al liberar el layout parent se liberan todos sus mComponentes
         delete mTetrisJuego;
         //delete mLabelComponentScoreActual;
@@ -353,20 +455,20 @@ public:
         delete mBitmapLevelPlayer1Valor;
         delete mBitmapLinesPlayer1Valor;
         delete mNombreJugadorPlayer1Valor;
-        delete mMetaData;
 
-//        Mix_FreeMusic(mMusicaFondo);
-//        Mix_FreeChunk(mSfxChunkGameOver);
-//        Mix_FreeChunk(mSfxChunkGameStart);
-//        Mix_FreeChunk(mSfxLevelUp);
-//        Mix_FreeChunk(mSfxBTBTetris);
+        delete mMusicaFondo;
+        delete mSfxChunkGameOver;
+        delete mSfxChunkGameStart;
+        delete mSfxLevelUp;
+        delete mSfxBTBTetris;
 
+        delete menuPausa;
         for(int i = 0 ; i < 8 ; i++) {
-//            Mix_FreeChunk(mSfxCongratulate[i]);
+            delete mSfxCongratulate[i];
         }
 
         for(int i = 0; i < 4;i++){
-//            Mix_FreeChunk(mSfxClearLines[i]);
+            delete mSfxClearLines[i];
         }
 
         for(int i = 0;i < 2;i++){
@@ -396,25 +498,27 @@ private:
 
     int mPuntajePlayer = 0;
     int mLineasCompletas = 0;
-    MetaData *mMetaData = nullptr;
+    //MetaData *mMetaData = nullptr;
+    ConfiguracionSingleton * configuracionSingleton;
     int mHighScore;
 
-//    Mix_Music * mMusicaFondo = nullptr;
 
-//    Mix_Chunk * mSfxChunkGameStart = nullptr;
-//    Mix_Chunk * mSfxChunkGameOver = nullptr;
-//    Mix_Chunk * mSfxLevelUp = nullptr;
+    EfectoSonido * mSfxChunkGameStart = nullptr;
+    EfectoSonido * mSfxChunkGameOver = nullptr;
+    EfectoSonido * mSfxLevelUp = nullptr;
 
-//    Mix_Chunk * mSfxBTBTetris = nullptr;
+    EfectoSonido * mSfxBTBTetris = nullptr;
 
-//    Mix_Chunk * mSfxCongratulate[8] {nullptr};
+    EfectoSonido * mSfxCongratulate[8] {nullptr};
 
-//    Mix_Chunk * mSfxClearLines[4] {nullptr};
+    EfectoSonido * mSfxClearLines[4] {nullptr};
 
     int mLevelTetrisPlayer = 1;
     int mLineasCompletasAnteriores = 0;
     bool mCongratuledScoreGreaterThanHighScore = false;
     std::string mNombreJugador;
+    MusicaFondo *mMusicaFondo;
+    MenuContextual *menuPausa;
 };
 
 #endif //TETRIS_TETRIS_HPP

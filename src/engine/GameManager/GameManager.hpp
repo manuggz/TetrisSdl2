@@ -73,7 +73,7 @@ public:
 
     void closePopUp(InterfazEstandarBackResult * result = nullptr) ;
 
-    void showPopUp(PopUpInterfaz *pPopUp,int showPopUp) ;
+    void showPopUp(PopUpInterfaz *pPopUp) ;
     // Volumen 0-128
     void playSound(Mix_Music *music,Uint8 volumen) ;
 
@@ -125,11 +125,14 @@ private:
     //int mWidth = 0;
     //int mHeight = 0;
 
-    PopUpInterfaz * mpPopUp = nullptr;
-    InterfazEstandarBackResult *mpResultPopUp = nullptr;
+    std::vector<PopUpInterfaz *> popUpVector; // Vector de popup
+    PopUpInterfaz * popup_actual = nullptr;
+
+    InterfazEstandarBackResult *p_resultado_popup = nullptr;
+
     // IDentificador del Actual PopUp
     // USado para identificar en el codigo cual es el popup que se cerró
-    int mIDCodePopUp;
+    //int mIDCodePopUp;
 
     std::string mRutaIcono;
 
@@ -165,5 +168,7 @@ private:
     bool puedeToglearPantallaCompleta = true;
 
     Toast * mpToastMostrando = nullptr;
+
+    void clearPopUpStack();
 };
 #endif

@@ -34,10 +34,14 @@ MetaData::MetaData(){
  */
 bool MetaData::cargarMetaData(std::string ruta,std::string delim){
 
+    mRuta = ruta;
+    mDelimitador = delim;
+
     std::ifstream fpArchivo(ruta);
 
     if(!fpArchivo){
         std::cerr << "[ERROR] leyendo archivo(MetaData):" << ruta << std::endl;
+        perror("");
         return false;
     }
 
@@ -61,8 +65,6 @@ bool MetaData::cargarMetaData(std::string ruta,std::string delim){
         }
     }
 
-    mRuta = ruta;
-    mDelimitador = delim;
 
     fpArchivo.close();
 
@@ -172,4 +174,8 @@ void MetaData::setMetaData(std::string clave,std::string valor){
  */
 std::string MetaData::getMetaData(std::string clave){
     return mData[clave];
+}
+
+bool MetaData::tieneClave(const char *const string) {
+    return mData.count(string) > 0;
 }

@@ -169,3 +169,7 @@ std::string LTexture::getPath()const {
     return mPath;
 }
 
+SDL_Texture *LTexture::getRawTexture() {
+    return mTexture;
+}
+

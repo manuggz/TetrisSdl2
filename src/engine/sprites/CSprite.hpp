@@ -40,7 +40,7 @@ class Sprite{
         return rect;
     }
     virtual void update(const Uint8 *keys=nullptr)=0;
-    virtual void draw(SDL_Renderer * )=0;
+    virtual void draw(SDL_Renderer * gRenderer)=0;
     //virtual int getTipo(){return type;};
     //virtual int getId(){return id;};
     //virtual void setId(int nuevo){id=nuevo;};

@@ -7,7 +7,7 @@
 
 #include <string>
 //#include <iostream>
-//#include <SDL2/SDL.h>
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 
 class EfectoSonido{
@@ -28,7 +28,7 @@ public:
     }
 
     void play(int channel = -1,int loops = 0) {
-        //Mix_PlayChannel(channel,mpRawChunk,loops);
+        Mix_PlayChannel(channel,mpRawChunk,loops);
     }
 
 private:

@@ -17,17 +17,45 @@
 class PopUpInterfaz{
 public:
 
-    PopUpInterfaz(GameManagerPopUpInterfaz * gameManager);
+    PopUpInterfaz(GameManagerPopUpInterfaz * gameManager,int ID);
+    /**
+     * Este metodo se encarga de Iniciar la Interfaz, al igual que los anteriores métodos.
+     * Este metodo debe usarse para dividir el inicio de variables y elementos del juego.
+     */
+    virtual void start(){mIsStarted=true;};
 
-    virtual void start();
-    virtual bool isPaused();
-    virtual bool isStarted();
-    virtual bool isStopped();
-    virtual void stop(); // La detiene marcandola  para eliminacion
+    /**
+     * Dice si la interfaz está pausada.
+     * Lo cual puede suceder debido a que se está mostrando un PopUp al usuario, o que hay otra interfaz en el top de la pila.
+     * @return
+     */
+    virtual bool isPaused(){return mIsPaused&&mIsStarted&&!mIsStopped;};
+
+    /**
+     * Dice si se ha iniciado la interfaz.
+     * Una interfaz se considera iniciada si ejecuta prepare()->createUI()->start()
+     * @return
+     */
+    virtual bool isStarted(){return mIsStarted;};
+    /**
+     * Dice si la interfaz está detenida.
+     * Una vez que la interfaz está detenida no se vuelve a ejecutar.
+     * Cuando el GM detecta una interfaz detenida la elimina.
+     * @return
+     */
+    virtual bool isStopped(){return mIsStopped;};
+    virtual void pause(){mIsPaused = true;};
+    virtual void stop(){mIsStopped = true;}; // La detiene marcandola  para eliminacion
+    virtual void resume() {mIsPaused = false;};
+
+    virtual void resultPopUp(InterfazEstandarBackResult * result, int idPopUp) {};
     virtual void prepare(){};
     virtual void update(){};
     virtual void createUI(SDL_Renderer * gRenderer){};
     virtual void procesarEvento(SDL_Event *event);
+    int getID(){
+        return ID;
+    }
 
     /**
      * Oscurece el fondo del PopUp
@@ -45,5 +73,6 @@ protected:
     bool mIsStarted = false;
 
     bool mIsStopped = false;
+    int ID;
 };
 #endif //BOMBERMAN_POPUPMESSAGE_HPP

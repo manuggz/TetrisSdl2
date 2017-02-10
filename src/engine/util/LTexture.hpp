@@ -84,6 +84,9 @@ public:
     int getWidth()const;
     int getHeight()const;
     std::string getPath()const;
+
+    SDL_Texture *getRawTexture();
+
 private:
     //The actual hardware texture
     SDL_Texture* mTexture = nullptr;

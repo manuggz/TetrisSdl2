@@ -45,7 +45,7 @@ public:
      *
      * @note Cuando se cierra el PopUp, se pasa el codePopUp a la interfaz que esté corriendo
      */
-    virtual void showPopUp(PopUpInterfaz * popUpInterfaz, const int codePopUp) = 0;
+    virtual void showPopUp(PopUpInterfaz * popUpInterfaz) = 0;
 
     /**
      * Obtiene el numero de Joysticks activos

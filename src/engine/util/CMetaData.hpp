@@ -71,6 +71,9 @@ public:
  */
     std::string getMetaData(std::string clave);
     bool cargarMetaData(std::string ruta, std::string delim);
+
+    bool tieneClave(const char *const string);
+
 private:
     std::unordered_map<std::string,std::string> mData; //Datos
     std::string mRuta; // Ruta en caso que se haya cargado los metadatos de un archivo

@@ -84,7 +84,9 @@ private:
 /*
  * imprime un caracter sobre la superficie dst (generalmente screen)
  */
-    int imprimir_letra (SDL_Renderer * gRenderer,int x, int y, char letra){
+    int imprimir_letra (SDL_Renderer * gRenderer,int x, int y, char letra,Uint8 alpha = 255){
+        mTexture->setBlendMode(SDL_BLENDMODE_BLEND);
+        mTexture->setAlpha(alpha);
         SDL_Rect srcrect;
         SDL_Rect dstrect = {x, y, 0, 0};
         int indice = obtener_indice (letra);
@@ -154,7 +156,7 @@ private:
 class BitmapFontRenderer{
 public:
 
-    BitmapFontRenderer(BitmapFont * bitmapFont,int left,int top){
+    BitmapFontRenderer(BitmapFont * bitmapFont,int left = 0,int top = 0){
         mTextoMostrar = "";
         mRect.x = left;
         mRect.y = top;
@@ -176,13 +178,24 @@ public:
 
         mRect.w = mBitmapFont->calculateWidth(mTextoMostrar);
         mRect.h = mBitmapFont->getHeight();
+
         if(mRight) {
             mRect.x = mRight - mRect.w;
         }
+
         if(mBottom) {
             mRect.y = mBottom- mRect.h;
         }
+
+        if(mCenterX){
+            mRect.x = mCenterX - mRect.w/2;
+        }
         //mTextureRendered = SDL_CreateTexture(mGRenderer,)
+    }
+
+    void setCenterX(int centerx) {
+        mCenterX = centerx;
+        mRight = 0;
     }
 
     void setRight(int right){
@@ -212,7 +225,7 @@ public:
         int dx = mRect.x;
 
         for (i = 0; i < mTextoMostrar.size(); i ++){
-            dx += mBitmapFont->imprimir_letra(gRenderer, dx, mRect.y, mTextoMostrar [i]);
+            dx += mBitmapFont->imprimir_letra(gRenderer, dx, mRect.y, mTextoMostrar [i],alpha);
         }
     }
 
@@ -231,7 +244,7 @@ public:
         int dx = x;
 
         for (i = 0; i < mTextoMostrar.size(); i ++){
-            dx += mBitmapFont->imprimir_letra(pRenderer, dx, y, mTextoMostrar [i]);
+            dx += mBitmapFont->imprimir_letra(pRenderer, dx, y, mTextoMostrar [i],alpha);
         }
 
     }
@@ -240,12 +253,19 @@ public:
         return mTextoMostrar;
     }
 
+    void setAlpha(Uint8 alpha) {
+        this->alpha = alpha;
+    }
+
+
 private:
     BitmapFont * mBitmapFont = nullptr;
     std::string mTextoMostrar;
     SDL_Rect mRect {0,0,0,0};
 
     int mBottom = 0,mRight = 0;
+    Uint8 alpha = 255;
+    int mCenterX = 0;
 };
 
 

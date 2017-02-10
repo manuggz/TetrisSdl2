@@ -9,13 +9,17 @@
 #include <SDL2/SDL.h>
 #include "engine/util/SpriteSheet.hpp"
 
+static const int N_FORMAS = 7;
+static const int N_GIROS_MAX = 4;
+static const int N_FILAS_ARRAY = 4;
+static const int N_COLUMNAS_ARRAY = 4;
+
 class Tetromino {
 
 public:
 
     enum TetrisForma{L,J,S,Z,O,I,T};
 
-    static const int N_FORMAS = 7;
 
     Tetromino(int nFilas, int nColumnas, int left, int top, int size, SpriteSheet *pSheet, bool esGrillaCompartida = true) {
 
@@ -189,9 +193,6 @@ private:
 	SDL_Rect mRectCuadroVisible{ 0,0,0,0 };
 	SDL_Color mColor;
 	SpriteSheet *mSpriteSheetTiposBloques = nullptr;
-	static const int N_GIROS_MAX = 4;
-	static const int N_FILAS_ARRAY = 4;
-	static const int N_COLUMNAS_ARRAY = 4;
 
 
     const Uint8 stArrayFormas[N_FORMAS][N_GIROS_MAX][N_FILAS_ARRAY][N_COLUMNAS_ARRAY] = {

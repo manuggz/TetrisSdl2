@@ -17,6 +17,8 @@
 #include "engine/util/util.hpp"
 #include "engine/util/SpriteSheet.hpp"
 #include "engine/util/BitmapFont.hpp"
+#include "engine/util/EfectoSonido.hpp"
+#include "ConfiguracionSingleton.hpp"
 
 static const int GRUPO_ANIMACION_ELIMINAR_LINEAS = 0;
 
@@ -28,20 +30,21 @@ public:
     //virtual void tetrisPuntajeCambio(int TetrisID,int nuevoPuntaje) = 0;
 
     virtual void nuevoTetrominoSiguiente(Tetromino *nuevoTetrominoSiguiente) = 0;
-    virtual void tetrisRetry(int tetrisID)  = 0;
-    virtual void tetrisEnd(int tetrisID) = 0;
 
     virtual void tetrisLineasCompletadas(int tetrisID,int nLineas) = 0;
 
-    virtual void tetrisPaused(int tetrisID) = 0;
-    virtual void tetrisResumed(int tetrisID) = 0;
+    virtual void tetrisPresionadoPause(int tetrisID) = 0;
     virtual void tetrisGameOver(int tetrisID) = 0;
-//    virtual void playSfx(Mix_Chunk * pSfxChunk) = 0;
     virtual void tetrisHardDrop(int tetrisID,int nCells) = 0;
     virtual void tetrisSoftDrop(int tetrisID,int nCells) = 0;
+
+    virtual std::string obtenerPrefPath() = 0;
+
+    virtual int getJoysActivos()  = 0;
+    virtual SDL_Joystick *getJoy(int device_index) = 0;
 };
 
-class TetrisJuego : public ControlaAnimacionInterfaz {
+class TetrisJuego : public ControlaAnimacionInterfaz, public ControlTeclasPlayerInterfazParent {
 
 public:
 
@@ -62,20 +65,34 @@ public:
         mArrayEstadoJuegoTetrominosCaidos = new Uint8[mFilas * mColumnas];
         mArrayEstadoJuegoRecursion		  = new Uint8[mFilas * mColumnas];
 
-//		mSfxPieceRotate = cargar_sonido((char *) "resources/music/SFX_PieceRotateLR.ogg");
-//        mSfxPieceRotateFail = cargar_sonido((char *) "resources/music/SFX_PieceRotateFail.ogg");
-//        mSfxPieceTouch = cargar_sonido((char *) "resources/music/SFX_PieceTouchLR.ogg");
-//        mSfxPieceLockDown = cargar_sonido((char *) "resources/music/SFX_PieceLockdown.ogg");
-//        mSfxPieceFall = cargar_sonido((char *) "resources/music/SFX_PieceFall.ogg");
-//        mSfxPieceMove = cargar_sonido((char *) "resources/music/SFX_PieceMoveLR.ogg");
-//        mSfxSoftDrop = cargar_sonido((char *) "resources/music/SFX_PieceSoftDrop.ogg");
-//        mSfxHardDrop = cargar_sonido((char *) "resources/music/SFX_PieceHardDrop.ogg");
-//        mSfxHoldPiece = cargar_sonido((char *) "resources/music/SFX_PieceHold.ogg");
+		mSfxPieceRotate = new EfectoSonido("resources/music/SFX_PieceRotateLR.ogg",MIX_MAX_VOLUME);
+        mSfxPieceRotateFail = new  EfectoSonido("resources/music/SFX_PieceRotateFail.ogg",MIX_MAX_VOLUME);
+        mSfxPieceTouch =  new EfectoSonido("resources/music/SFX_PieceTouchLR.ogg",MIX_MAX_VOLUME);
+        mSfxPieceLockDown =  new EfectoSonido("resources/music/SFX_PieceLockdown.ogg",MIX_MAX_VOLUME);
+        mSfxPieceFall = new  EfectoSonido("resources/music/SFX_PieceFall.ogg",MIX_MAX_VOLUME);
+        mSfxPieceMove = new  EfectoSonido("resources/music/SFX_PieceMoveLR.ogg",MIX_MAX_VOLUME);
+        mSfxSoftDrop =  new EfectoSonido("resources/music/SFX_PieceSoftDrop.ogg",MIX_MAX_VOLUME);
+        mSfxHardDrop =  new EfectoSonido("resources/music/SFX_PieceHardDrop.ogg",MIX_MAX_VOLUME);
+        mSfxHoldPiece = new  EfectoSonido("resources/music/SFX_PieceHold.ogg",MIX_MAX_VOLUME);
 
         mControlPlayerTeclas = new ControlTeclasPlayer();
+        cargarConfiguracionTeclas();
+    }
+
+    void cargarConfiguracionTeclas(){
+        mControlPlayerTeclas->cargarDesdeArchivo(mParent->obtenerPrefPath() + NOMBRE_FILE_TECLAS_PLAYER1);
+        mControlPlayerTeclas->setParent(this);
         mControlPlayerTeclas->setTeclaRepeatDelay(ControlTeclasPlayer::TECLA_HARD_DROP,ControlTeclasPlayer::NO_REPEAT);
         mControlPlayerTeclas->setTeclaRepeatDelay(ControlTeclasPlayer::TECLA_GIRAR_LEFT,ControlTeclasPlayer::DELAY_REPEAT_MEDIUM);
         mControlPlayerTeclas->setTeclaRepeatDelay(ControlTeclasPlayer::TECLA_GIRAR_RIGHT,ControlTeclasPlayer::DELAY_REPEAT_MEDIUM);
+
+    }
+    int getJoysActivos() override {
+        return mParent->getJoysActivos();
+    }
+
+    SDL_Joystick *getJoy(int device_index) override {
+        return mParent->getJoy(device_index);
     }
 
     void crearUI(SDL_Renderer * gRenderer){
@@ -85,27 +102,6 @@ public:
 		mSpriteSheetBloques = new SpriteSheet();
 		mSpriteSheetBloques->cargarDesdeArchivo(gRenderer,"resources/blocks.png",5,8,false);
 
-        for(int i = 1;i <= 2;i++){
-            mpBitmapFont[i - 1] = new BitmapFont(gRenderer,"resources/fuentes/fuente_" + std::to_string(i) + ".png");
-        }
-
-        mpBitFntRendOpsMenuPausa[OpcionesPausa::CONTINUE] = new BitmapFontRenderer(
-                mpBitmapFont[EstadoOpcionMenu::NORMAL],418,271);
-        mpBitFntRendOpsMenuPausa[OpcionesPausa::CONTINUE]->setText("CONTINUE");
-
-        mpBitFntRendOpsMenuPausa[OpcionesPausa::RETRY] = new BitmapFontRenderer(
-                mpBitmapFont[EstadoOpcionMenu::NORMAL],418,313);
-        mpBitFntRendOpsMenuPausa[OpcionesPausa::RETRY]->setText("RETRY");
-
-        mpBitFntRendOpsMenuPausa[OpcionesPausa::END] = new BitmapFontRenderer(
-                mpBitmapFont[EstadoOpcionMenu::NORMAL],418,354);
-        mpBitFntRendOpsMenuPausa[OpcionesPausa::END]->setText("END");
-
-        mOpcionSeleccionadaMenuPausa = 0;
-
-        plTextureFlechaOpcionSeleccionada = new LTexture();
-        plTextureFlechaOpcionSeleccionada->cargarDesdeArchivo("resources/flecha_opcion_seleccionada.png",gRenderer,false);
-
         plTextureGameOver = new LTexture();
         plTextureGameOver->cargarDesdeArchivo("resources/game_over_text.png",gRenderer,false);
 
@@ -113,6 +109,7 @@ public:
 
     void start(){
         std::cout << "TetrisJuego::start" << std::endl;
+        configuracionSingleton = ConfiguracionSingletonManager::obtenerConfiguracion();
         reset();
     }
 
@@ -137,7 +134,6 @@ public:
 
 		mEstadoJuego = EstadoJuego ::RUNNING;
         
-		//mMantieneTeclaPausaPresionada = true;
 		mTetrominoGhost = generarTetrominoGhost();
 		crearTetrominos();
     }
@@ -205,16 +201,6 @@ public:
         mControlAnimaciones->draw(gRenderer);
     }
 
-    void estadoPausadoDraw(SDL_Renderer * gRenderer){
-
-        for(int i = 0; i < N_OPCIONES_PAUSA;i++){
-            mpBitFntRendOpsMenuPausa[i]->draw(gRenderer);
-        }
-        plTextureFlechaOpcionSeleccionada->draw(
-                gRenderer,
-                mpBitFntRendOpsMenuPausa[mOpcionSeleccionadaMenuPausa]->getLeft() - plTextureFlechaOpcionSeleccionada->getWidth() - 3,
-                mpBitFntRendOpsMenuPausa[mOpcionSeleccionadaMenuPausa]->getTop());
-    }
 
     void dibujarArrayFondoJuego(SDL_Renderer * gRenderer){
         for(int i = 0 ; i < mFilas ; i++ ){
@@ -241,7 +227,7 @@ public:
                 estadoRunningDraw(gRenderer);
                 break;
             case PAUSADO:
-                estadoPausadoDraw(gRenderer);
+                //estadoPausadoDraw(gRenderer);
                 break;
             case GAME_OVER:
                 estadoGameOverDraw(gRenderer);
@@ -292,80 +278,80 @@ public:
         return false;
     }
 
-    void procesarEventoRunning(SDL_Event * evento){
-    }
     void procesarEvento(SDL_Event * evento){
 
         switch(mEstadoJuego){
 
             case STOPPED:break;
             case RUNNING:
-                procesarEventoRunning(evento);
+                //procesarEventoRunning(evento);
                 break;
             case PAUSADO:
-                procesarEventoPausado(evento);
+                //procesarEventoPausado(evento);
                 break;
             case GAME_OVER:
-                procesarEventoGameOver(evento);
+                //procesarEventoGameOver(evento);
                 break;
         }
     }
 
-    void procesarEventoPausado(SDL_Event * evento){
-
-        if(evento->type == SDL_KEYDOWN){
-            switch (evento->key.keysym.sym) {
-                case SDLK_UP:
-                    if(mOpcionSeleccionadaMenuPausa - 1 >= 0){
-                        mpBitFntRendOpsMenuPausa[mOpcionSeleccionadaMenuPausa]->setBitmapFont(mpBitmapFont[NORMAL]);
-                        mOpcionSeleccionadaMenuPausa--;
-//                        mParent->playSfx(mSfxPieceTouch);
-                        mpBitFntRendOpsMenuPausa[mOpcionSeleccionadaMenuPausa]->setBitmapFont(mpBitmapFont[RESALTADO]);
-                    }
-                    break;
-                case SDLK_DOWN:
-                    if(mOpcionSeleccionadaMenuPausa + 1 < N_OPCIONES_PAUSA){
-                        mpBitFntRendOpsMenuPausa[mOpcionSeleccionadaMenuPausa]->setBitmapFont(mpBitmapFont[NORMAL]);
-                        mOpcionSeleccionadaMenuPausa++;
-//                        mParent->playSfx(mSfxPieceTouch);
-                        mpBitFntRendOpsMenuPausa[mOpcionSeleccionadaMenuPausa]->setBitmapFont(mpBitmapFont[RESALTADO]);
-                    }
-                    break;
-                case SDLK_RETURN:
-                    mpBitFntRendOpsMenuPausa[mOpcionSeleccionadaMenuPausa]->setBitmapFont(mpBitmapFont[NORMAL]);
-                    switch(mOpcionSeleccionadaMenuPausa){
-                        case OpcionesPausa::CONTINUE:
-                            std::cout << "TetrisJuego::CONTINUE" << std::endl;
-                            mEstadoJuego = EstadoJuego ::RUNNING;
-                            mParent->tetrisResumed(mId);
-//                            mParent->playSfx(mSfxHoldPiece);
-                            break;
-                        case OpcionesPausa ::RETRY:
-                            std::cout << "TetrisJuego::RETRY" << std::endl;
-                            mParent->tetrisRetry(mId);
-                            break;
-                        case OpcionesPausa ::END:
-                            std::cout << "TetrisJuego::END" << std::endl;
-                            mParent->tetrisEnd(mId);
-                            break;
-                        default:break; // No debería ocurrir, ayuda a quitar warnings
-                    }
-                    mOpcionSeleccionadaMenuPausa = 0;
-                    break;
-            }
-        }
-
-
+    void resume(){
+        mEstadoJuego = EstadoJuego ::RUNNING;
+        if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxHoldPiece->play();
+        cargarConfiguracionTeclas();
     }
 
-    void procesarEventoGameOver(SDL_Event * evento){
-        if(evento->type == SDL_KEYDOWN){
-
-            if(evento->key.keysym.sym == SDLK_RETURN){
-                mParent->tetrisRetry(mId);
-            }
-        }
+    void pause(){
+        mEstadoJuego = EstadoJuego ::PAUSADO;
     }
+
+//    void procesarEventoPausado(SDL_Event * evento){
+//
+//        if(evento->type == SDL_KEYDOWN){
+//            switch (evento->key.keysym.sym) {
+//                case SDLK_UP:
+//                    if(mOpcionSeleccionadaMenuPausa - 1 >= 0){
+//                        mpBitFntRendOpsMenuPausa[mOpcionSeleccionadaMenuPausa]->setBitmapFont(mpBitmapFont[NORMAL]);
+//                        mOpcionSeleccionadaMenuPausa--;
+//                        if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxPieceTouch->play();
+//                        mpBitFntRendOpsMenuPausa[mOpcionSeleccionadaMenuPausa]->setBitmapFont(mpBitmapFont[RESALTADO]);
+//                    }
+//                    break;
+//                case SDLK_DOWN:
+//                    if(mOpcionSeleccionadaMenuPausa + 1 < N_OPCIONES_PAUSA){
+//                        mpBitFntRendOpsMenuPausa[mOpcionSeleccionadaMenuPausa]->setBitmapFont(mpBitmapFont[NORMAL]);
+//                        mOpcionSeleccionadaMenuPausa++;
+//                        if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxPieceTouch->play();
+//                        mpBitFntRendOpsMenuPausa[mOpcionSeleccionadaMenuPausa]->setBitmapFont(mpBitmapFont[RESALTADO]);
+//                    }
+//                    break;
+//                case SDLK_RETURN:
+//                    mpBitFntRendOpsMenuPausa[mOpcionSeleccionadaMenuPausa]->setBitmapFont(mpBitmapFont[NORMAL]);
+//                    switch(mOpcionSeleccionadaMenuPausa){
+//                        case OpcionesPausa::CONTINUE:
+//                            std::cout << "TetrisJuego::CONTINUE" << std::endl;
+//                            mEstadoJuego = EstadoJuego ::RUNNING;
+//                            mParent->tetrisResumed(mId);
+//                            if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxHoldPiece->play();
+//                            break;
+//                        case OpcionesPausa ::RETRY:
+//                            std::cout << "TetrisJuego::RETRY" << std::endl;
+//                            mParent->tetrisRetry(mId);
+//                            break;
+//                        case OpcionesPausa ::END:
+//                            std::cout << "TetrisJuego::END" << std::endl;
+//                            mParent->tetrisEnd(mId);
+//                            break;
+//                        default:break; // No debería ocurrir, ayuda a quitar warnings
+//                    }
+//                    mOpcionSeleccionadaMenuPausa = 0;
+//                    break;
+//            }
+//        }
+//
+//
+//    }
+
 
 
     bool girarFormaActualDesc(int direccion) {
@@ -384,12 +370,12 @@ public:
                 if(estaTetraminoEnPosicionInvalida(mTetrominoActual)){
                     mTetrominoActual->rotate(-direccion);
                     mTetrominoActual->moveIp(mSizeCuadro,0);
-//                    mParent->playSfx(mSfxPieceRotateFail);
+                    if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxPieceRotateFail->play();
                     return false;
                 }
             }
         }else{
-//            mParent->playSfx(mSfxPieceRotate);
+            if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxPieceRotate->play();
         }
         return true;
     }
@@ -487,25 +473,23 @@ public:
 
         if(mTetrominoActual != nullptr){
 
-            const Uint8 *teclas= SDL_GetKeyboardState(NULL);//se obtiene el estado_actual actual del teclado
-            mControlPlayerTeclas->update(teclas);
-            //mTetrominoActual->update(nullptr);
+            mControlPlayerTeclas->update();
 
             mDelayActualBajarTetrominoActual++;
 
             if(mControlPlayerTeclas->estaTeclaAceptada(ControlTeclasPlayer::TECLA_MOVER_LEFT)){
                 if (moverIpTetromino(mTetrominoActual, -mSizeCuadro, 0)) {
-//                    mParent->playSfx(mSfxPieceMove);
+                    if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxPieceMove->play();
                     mDelayActualBajarTetrominoActual = 0;
                 } else {
-//                    mParent->playSfx(mSfxPieceTouch);
+                    if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxPieceTouch->play();
                 }
             }else if(mControlPlayerTeclas->estaTeclaAceptada(ControlTeclasPlayer::TECLA_MOVER_RIGHT)){
                 if (moverIpTetromino(mTetrominoActual, mSizeCuadro, 0)) {
-//                    mParent->playSfx(mSfxPieceMove);
+                    if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxPieceMove->play();
                     mDelayActualBajarTetrominoActual = 0;
                 } else {
-//                    mParent->playSfx(mSfxPieceTouch);
+                    if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxPieceTouch->play();
                 }
             }else if(mControlPlayerTeclas->estaTeclaAceptada(ControlTeclasPlayer::TECLA_HARD_DROP)) {
                 int nCeldasDropeadas = hardDropTetramino(mTetrominoActual);
@@ -514,19 +498,19 @@ public:
                 }
 
                 mDelayActualBajarTetrominoActual = mMaxDelayBajarTetrominoActual + 1;
-//                mParent->playSfx(mSfxHoldPiece);
+                if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxHoldPiece->play();
             }else if(mControlPlayerTeclas->estaTeclaPresionada(ControlTeclasPlayer::TECLA_SOFT_DROP) &&
                     !mEstaUtilizandoSoftDrop) {
                     mDelayActualBajarTetrominoActual = mMaxDelayBajarTetrominoActual + 1;
                     mMaxDelayBajarTetrominoActual /= 4;
-//                    mParent->playSfx(mSfxSoftDrop);
+                    if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxSoftDrop->play();
                     mCeldasAvanzadasSoftDrop = 0;
                     mEstaUtilizandoSoftDrop = true;
 
             }else if(!mControlPlayerTeclas->estaTeclaPresionada(ControlTeclasPlayer::TECLA_SOFT_DROP) &&
                     mEstaUtilizandoSoftDrop) {
                 mMaxDelayBajarTetrominoActual *= 4;
-//                mParent->playSfx(mSfxHardDrop);
+                if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxHardDrop->play();
                 if (mCeldasAvanzadasSoftDrop) {
                     mParent->tetrisSoftDrop(mId, mCeldasAvanzadasSoftDrop);
                     mCeldasAvanzadasSoftDrop = 0;
@@ -543,10 +527,7 @@ public:
                     mDelayActualBajarTetrominoActual = 0;
                 }
             }else if(mControlPlayerTeclas->estaTeclaAceptada(ControlTeclasPlayer::TECLA_PAUSA)) {
-                mParent->tetrisPaused(mId);
-                mEstadoJuego = EstadoJuego ::PAUSADO;
-                mOpcionSeleccionadaMenuPausa = 0;
-                mpBitFntRendOpsMenuPausa[mOpcionSeleccionadaMenuPausa]->setBitmapFont(mpBitmapFont[EstadoOpcionMenu::RESALTADO]);
+                mParent->tetrisPresionadoPause(mId);
             }
 
             mTetrominoGhost->move(mTetrominoActual->getX(),mTetrominoActual->getY());
@@ -563,7 +544,7 @@ public:
                         }
                     }
 
-//                    mParent->playSfx(mSfxPieceLockDown);
+                    if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxPieceLockDown->play();
                     guardarTetrominoEnFondo(mTetrominoActual);
 
                     delete mTetrominoActual;
@@ -580,7 +561,7 @@ public:
                         mCeldasAvanzadasSoftDrop++;
                     }
 
-//                    mParent->playSfx(mSfxPieceFall);
+                    if(configuracionSingleton->obtenerBooleano(ID_IS_SFX_ON,true))mSfxPieceFall->play();
                 }
 
             }
@@ -760,26 +741,17 @@ public:
         delete mTetrominoActual;
         delete mTetrominoSiguiente;
 		delete mTetrominoGhost;
-
-        for(int i = 0; i < 2 ;i++){
-            delete mpBitmapFont[i];
-        }
-
-        for(int i = 0; i < N_OPCIONES_PAUSA;i++){
-            delete mpBitFntRendOpsMenuPausa[i];
-        }
-        delete plTextureFlechaOpcionSeleccionada;
         delete plTextureGameOver;
 
-//        Mix_FreeChunk(mSfxPieceRotate);
-//        Mix_FreeChunk(mSfxPieceRotateFail);
-//        Mix_FreeChunk(mSfxPieceTouch);
-//        Mix_FreeChunk(mSfxPieceLockDown);
-//        Mix_FreeChunk(mSfxPieceFall);
-//        Mix_FreeChunk(mSfxPieceMove);
-//        Mix_FreeChunk(mSfxSoftDrop);
-//        Mix_FreeChunk(mSfxHardDrop);
-//        Mix_FreeChunk(mSfxHoldPiece);
+        delete mSfxPieceRotate;
+        delete mSfxPieceRotateFail;
+        delete mSfxPieceTouch;
+        delete mSfxPieceLockDown;
+        delete mSfxPieceFall;
+        delete mSfxPieceMove;
+        delete mSfxSoftDrop;
+        delete mSfxHardDrop;
+        delete mSfxHoldPiece;
 
 		for (auto & tetrominoCayendo : mDequeTetraminosCayendo) {
 			delete tetrominoCayendo;
@@ -804,11 +776,9 @@ private:
 		PAUSADO,
 		GAME_OVER
 	};
-	enum EstadoOpcionMenu {
-		NORMAL,
-		RESALTADO
-	};
-	enum OpcionesPausa {
+
+
+    enum OpcionesPausa {
 		CONTINUE,
 		RETRY,
 		END,
@@ -840,12 +810,6 @@ private:
     int mActualDelayBajarTetraminosFlotantes = 0;
     int mMaxDelayBajarTetraminosFlotantes = 0;
 
-    //bool mMantieneTeclaLeftPresionada = false;
-    //bool mMantieneTeclaRightPresionada = false;
-    //bool mMantieneTeclaGiroCounterClockPresionada = false;
-    //bool mMantieneTeclaHardDropPresionada = false;
-    //bool mMantieneTeclaSoftDropPresionada = false;
-    //bool mMantieneTeclaPausaPresionada = false;
 
     SpriteSheet * mSpriteSheetBloques = nullptr;
     //LTexture *mTextureBackground;
@@ -853,148 +817,29 @@ private:
 
 	std::deque<Tetromino *>  mDequeTetraminosCayendo;
 
-    BitmapFont * mpBitmapFont[2]  {nullptr};
-    BitmapFontRenderer * mpBitFntRendOpsMenuPausa[N_OPCIONES_PAUSA] {nullptr};
+    //BitmapFont * mpBitmapFont[2]  {nullptr};
+    //BitmapFontRenderer * mpBitFntRendOpsMenuPausa[N_OPCIONES_PAUSA] {nullptr};
 
-    LTexture * plTextureFlechaOpcionSeleccionada = nullptr;
+    //LTexture * plTextureFlechaOpcionSeleccionada = nullptr;
 	LTexture * plTextureGameOver = nullptr;
 
-    int mOpcionSeleccionadaMenuPausa = 0;
 
-//
-//    Mix_Chunk * mSfxPieceRotate = nullptr;
-//    Mix_Chunk * mSfxPieceRotateFail = nullptr;
-//    Mix_Chunk * mSfxPieceMove = nullptr;
-//    Mix_Chunk * mSfxPieceFall = nullptr;
-//    Mix_Chunk * mSfxPieceLockDown = nullptr;
-//    Mix_Chunk * mSfxPieceTouch = nullptr;
-//
-//    Mix_Chunk * mSfxSoftDrop = nullptr;
-//    Mix_Chunk * mSfxHardDrop = nullptr;
-//    Mix_Chunk * mSfxHoldPiece = nullptr;
+    EfectoSonido * mSfxPieceRotate = nullptr;
+    EfectoSonido * mSfxPieceRotateFail = nullptr;
+    EfectoSonido * mSfxPieceMove = nullptr;
+    EfectoSonido * mSfxPieceFall = nullptr;
+    EfectoSonido * mSfxPieceLockDown = nullptr;
+    EfectoSonido * mSfxPieceTouch = nullptr;
+
+    EfectoSonido * mSfxSoftDrop = nullptr;
+    EfectoSonido * mSfxHardDrop = nullptr;
+    EfectoSonido * mSfxHoldPiece = nullptr;
 
     int mCeldasAvanzadasSoftDrop = 0;
     bool mEstaUtilizandoSoftDrop = false;
 
 	RandomGenerator mRandomGenerator;
     ControlTeclasPlayer * mControlPlayerTeclas = nullptr;
+    ConfiguracionSingleton * configuracionSingleton;
 };
 #endif //TETRIS_TETRISJUEGO_HPP
-//
-//    int obtenerIndiceBloqueSpriteSheet(int i, int j, Tetromino * pPieza) {
-//
-//        bool existeExtArriba = pPieza->existeIndiceAC(i - 1, j) &&
-//                                     pPieza->valorIndiceAC(i-1,j) != 0;
-//        bool existeExtAbajo = pPieza->existeIndiceAC(i + 1, j) &&
-//                                     pPieza->valorIndiceAC(i+1,j) != 0;
-//        bool existeExtIzquierda = pPieza->existeIndiceAC(i, j - 1) &&
-//                                     pPieza->valorIndiceAC(i,j-1) != 0;
-//        bool existeExtDerecha = pPieza->existeIndiceAC(i, j + 1) &&
-//                                     pPieza->valorIndiceAC(i,j+1) != 0;
-//        int indice = obtenerIndiceBloqueSpriteSheet(existeExtArriba, existeExtAbajo, existeExtIzquierda, existeExtDerecha);
-//        switch (indice){
-//            case 3*8 + 2 + 1:
-//                if(pPieza->existeIndiceAC(i,j-2) &&pPieza->valorIndiceAC(i,j-2) == 0)
-//                    return 2*8 + 2 + 1;
-//            case 2*8 + 1 + 1:
-//                if(pPieza->existeIndiceAC(i,j-2) &&pPieza->valorIndiceAC(i,j-2) == 0)
-//                    return 3*8 + 1 + 1;
-//            default:
-//                return indice;
-//        }
-//
-//    }
-//
-//    int obtenerIndiceBloqueSpriteSheet(bool existeExtArriba, bool existeExtAbajo, bool existeExtIzquierda,
-//                                       bool existeExtDerecha){
-//        if(existeExtArriba && existeExtDerecha && existeExtIzquierda){
-//            return 3*8 + 5 + 1;
-//        }else if(existeExtAbajo && existeExtDerecha && existeExtIzquierda){
-//            return  3*8 + 4 + 1;
-//        }else if(existeExtAbajo && existeExtArriba){
-//            return 1*8 + 6 + 1;
-//        }else if(existeExtDerecha && existeExtIzquierda){
-//            return 0*8 + 7 + 1;
-//        }else if(existeExtDerecha && existeExtAbajo){
-//            return 2*8 + 4 + 1;
-//        }else if(existeExtDerecha && existeExtArriba){
-//            return 4*8 + 2 + 1;
-//        }else if(existeExtIzquierda && existeExtArriba){
-//            return 2*8 + 7 + 1;
-//        }else if(existeExtIzquierda && existeExtAbajo){
-//            return 4*8 + 1 + 1;
-//        }else if(existeExtIzquierda){
-//            return 3*8 + 2 + 1;
-//        }else if(existeExtDerecha){
-//            return 3*8 + 0 + 1;
-//        }else if(existeExtArriba){
-//            return 2*8 + 1 + 1;
-//        }else if(existeExtAbajo){
-//            return 2*8 + 3 + 1;
-//        }else{
-//            return 1*8 + 1 + 1;
-//        }
-//    }
-//
-//    void obtenerExtensionesIndiceSpriteSheet(int indice,
-//                                       bool & deberiaExistirArriba,    bool & deberiaExistirAbajo,
-//                                       bool & deberiaExistirIzquierda, bool & deberiaExistirDerecha){
-//        deberiaExistirArriba = false;
-//        deberiaExistirDerecha = false;
-//        deberiaExistirIzquierda = false;
-//        deberiaExistirAbajo = false;
-//
-//        switch(indice){
-//            case 3*8 + 5 + 1:
-//                deberiaExistirArriba = true;
-//                deberiaExistirDerecha = true;
-//                deberiaExistirIzquierda = true;
-//                break;
-//            case 3*8 + 4 + 1:
-//                deberiaExistirAbajo = true;
-//                deberiaExistirDerecha = true;
-//                deberiaExistirIzquierda = true;
-//                break;
-//            case 1*8 + 6 + 1:
-//                deberiaExistirAbajo = true;
-//                deberiaExistirArriba = true;
-//                break;
-//            case 0*8 + 7 + 1:
-//                deberiaExistirDerecha = true;
-//                deberiaExistirIzquierda = true;
-//                break;
-//            case 2*8 + 4 + 1:
-//                deberiaExistirDerecha = true;
-//                deberiaExistirAbajo = true;
-//                break;
-//            case 4*8 + 2 + 1:
-//                deberiaExistirDerecha = true;
-//                deberiaExistirArriba = true;
-//                break;
-//            case 2*8 + 7 + 1:
-//                deberiaExistirArriba = true;
-//                deberiaExistirIzquierda = true;
-//                break;
-//            case 4*8 + 1 + 1:
-//                deberiaExistirAbajo = true;
-//                deberiaExistirIzquierda = true;
-//                break;
-//            case 3*8 + 2 + 1:
-//            case 2*8 + 2 + 1:
-//                deberiaExistirIzquierda = true;
-//                break;
-//            case 3*8 + 0 + 1:
-//                deberiaExistirDerecha = true;
-//                break;
-//            case 2*8 + 1 + 1:
-//            case 3*8 + 1 + 1:
-//                deberiaExistirArriba = true;
-//                break;
-//            case 2*8 + 3 + 1:
-//                deberiaExistirAbajo = true;
-//                break;
-//            default:
-//                break;
-//
-//        }
-//    }
