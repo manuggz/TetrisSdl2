@@ -179,7 +179,7 @@ public:
 
         //mLayoutBackGround->setBackgroundColor(SDL_Color {27,63,177,255});
         LTexture * lTexture = new LTexture();
-        lTexture->cargarDesdeArchivo("resources/backgroundSinglePlayer.png",renderer,false);
+        lTexture->cargarDesdeArchivo("resources/images/backgroundSinglePlayer.png",renderer,false);
         mLayoutBackGround->setBackgroundTexture(lTexture);
 
         mBitmapFont[NORMAL] = new BitmapFont(renderer,"resources/fuentes/tetris_fuente_1_32_blanca_rasterizado.png");

@@ -100,10 +100,10 @@ public:
 		mGRenderer = gRenderer;
 		
 		mSpriteSheetBloques = new SpriteSheet();
-		mSpriteSheetBloques->cargarDesdeArchivo(gRenderer,"resources/blocks.png",5,8,false);
+		mSpriteSheetBloques->cargarDesdeArchivo(gRenderer,"resources/images/blocks.png",5,8,false);
 
         plTextureGameOver = new LTexture();
-        plTextureGameOver->cargarDesdeArchivo("resources/game_over_text.png",gRenderer,false);
+        plTextureGameOver->cargarDesdeArchivo("resources/images/game_over_text.png",gRenderer,false);
 
     }
 
@@ -150,7 +150,7 @@ public:
 	}
 	Tetromino * generarTetrominoGhost() {
 		Tetromino * tetrominoGhost = new Tetromino(Tetromino::Z, 0, 0, mSizeCuadro,
-			new SpriteSheet(mGRenderer, "resources/blocks.png", 5, 8, false), false);
+			new SpriteSheet(mGRenderer, "resources/images/blocks.png", 5, 8, false), false);
 
 		tetrominoGhost->setAlpha(150);
 		tetrominoGhost->setIndiceCuadroBloque(12);

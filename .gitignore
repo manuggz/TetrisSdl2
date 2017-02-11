@@ -2,3 +2,7 @@
 .gitignore
 .idea/workspace.xml
 build/
+src/SDL
+TetrisSolucionVS/
+vc_redist.x64.exe
+vc_redist.x86.exe

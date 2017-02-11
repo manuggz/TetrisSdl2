@@ -35,7 +35,7 @@ public:
         InterfazGrafica::createUI(gRenderer);
 
         mTextureFondo = new LTexture();
-        mTextureFondo->cargarDesdeArchivo("resources/background_menu_principal.png",gRenderer,false);
+        mTextureFondo->cargarDesdeArchivo("resources/images/background_menu_principal.png",gRenderer,false);
 
         mMusicaFondo = new MusicaFondo("resources/music/8_bit_electro_house_remix.wav");
         mSfxChangeSelect = new EfectoSonido("resources/music/SFX_PieceLockdown.ogg",MIX_MAX_VOLUME);
