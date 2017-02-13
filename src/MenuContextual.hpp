@@ -313,6 +313,7 @@ public:
         int mayor_width_opciones = 0;
 
         int width_opcion;
+
         for(int i = 0; i < opciones_v.size();i++){
             width_opcion = mpBitmapFont[FUENTE_NORMAL]->calculateWidth(opciones_v[i]->getLeftText());
 

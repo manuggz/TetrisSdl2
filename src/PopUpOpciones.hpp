@@ -56,7 +56,7 @@ public:
         menu->establecerFlechaHaciaAfuera(ID_OPTION_MENU_MUSIC,true);
         menu->establecerFlechaHaciaAfuera(ID_OPTION_MENU_SFX,true);
 
-        menu->establecerFuente(new BitmapFont(gRenderer,"resources/fuentes/tetris_fuente_1_32_roja.png"),
+        menu->establecerFuente(new BitmapFont(gRenderer,"resources/fuentes/tetris_fuente_1_32_blanca.png"),
                                MenuContextual::FUENTE_NORMAL);
         menu->establecerFuente(new BitmapFont(gRenderer,"resources/fuentes/tetris_fuente_1_32_amarilla.png"),
                                MenuContextual::FUENTE_RESALTADA);

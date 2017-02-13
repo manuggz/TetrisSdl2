@@ -182,8 +182,8 @@ public:
         lTexture->cargarDesdeArchivo("resources/images/backgroundSinglePlayer.png",renderer,false);
         mLayoutBackGround->setBackgroundTexture(lTexture);
 
-        mBitmapFont[NORMAL] = new BitmapFont(renderer,"resources/fuentes/tetris_fuente_1_32_blanca_rasterizado.png");
-        mBitmapFont[RESALTADO] = new BitmapFont(renderer,"resources/fuentes/tetris_fuente_1_32_roja.png");
+        mBitmapFont[NORMAL] = new BitmapFont(renderer,"resources/fuentes/tetris_fuente_1_32_blanca.png");
+        mBitmapFont[RESALTADO] = new BitmapFont(renderer,"resources/fuentes/tetris_fuente_1_32_blanca.png");
 
         mBitmapHighScorePlayer1Valor = new BitmapFontRenderer(mBitmapFont[NORMAL],30,217);
         setTextWithDigits(mBitmapHighScorePlayer1Valor,mHighScore,N_DIGITOS_ENTEROS);
@@ -215,7 +215,7 @@ public:
         menuPausa->agregarOpcionMenu("Options", ID_OPCION_MENU_OPTIONS);
         menuPausa->agregarOpcionMenu("End", ID_OPCION_MENU_END);
 
-        menuPausa->establecerFuente(new BitmapFont(renderer,"resources/fuentes/tetris_fuente_1_32_roja.png"),
+        menuPausa->establecerFuente(new BitmapFont(renderer,"resources/fuentes/tetris_fuente_1_32_blanca.png"),
                                MenuContextual::FUENTE_NORMAL);
         menuPausa->establecerFuente(new BitmapFont(renderer,"resources/fuentes/tetris_fuente_1_32_amarilla.png"),
                                MenuContextual::FUENTE_RESALTADA);

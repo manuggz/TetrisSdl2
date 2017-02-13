@@ -48,7 +48,7 @@ public:
         menu->agregarOpcionMenu("NEW GAME",NEW_GAME);
         menu->agregarOpcionMenu("SCORES",SCORES);
         menu->agregarOpcionMenu("OPTIONS",OPTIONS);
-        menu->establecerFuente(new BitmapFont(gRenderer,"resources/fuentes/tetris_fuente_1_32_roja.png"),
+        menu->establecerFuente(new BitmapFont(gRenderer,"resources/fuentes/tetris_fuente_1_32_blanca.png"),
                                MenuContextual::FUENTE_NORMAL);
         menu->establecerFuente(new BitmapFont(gRenderer,"resources/fuentes/tetris_fuente_1_32_amarilla.png"),
                                MenuContextual::FUENTE_RESALTADA);

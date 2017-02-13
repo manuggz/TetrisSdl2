@@ -41,7 +41,7 @@ public:
         y_dibujo = rect_screen.h/2 - pTextureFondo->getHeight()/2;
 
         pBFTextInsertNewNick = new BitmapFont(gRenderer,"resources/fuentes/tetris_fuente_1_32_amarilla.png");
-        pBFTextNickPlayer    = new BitmapFont(gRenderer,"resources/fuentes/tetris_fuente_1_32_roja.png");
+        pBFTextNickPlayer    = new BitmapFont(gRenderer,"resources/fuentes/tetris_fuente_1_32_blanca.png");
 
         pBFRTextInsertNewNick = new BitmapFontRenderer(pBFTextInsertNewNick,0,y_dibujo + 30);
         pBFRTextInsertNewNick->setCenterX(rect_screen.w/2);

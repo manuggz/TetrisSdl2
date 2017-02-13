@@ -82,7 +82,7 @@ protected:
 
     bool mIsStopped = false;
 
-    int mDuracion = 0;
+	Uint32 mDuracion = 0;
     LTimer timer;
 };
 
